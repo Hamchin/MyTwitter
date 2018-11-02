@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<title>MyTwitter</title>
+		<link rel="stylesheet" href="{{ url_for("static", filename="index.css") }}">
+		<link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+		<link rel="shortcut icon" href="{{ url_for("static", filename="favicon.png") }}">
+	</head>
+	<body>
+
+		<div style="position:absolute; width:20%; left:10px; top:2px;">
+			<button id="file" class="square_btn" style="width: 90%;"><strong>File</strong></button>
+			<input type="text" id="media" class="box" style="width: 84%; margin: 0.5em 0 0 0;" placeholder="Image">
+			<textarea id="text" class="box" style="height: 100px; width: 84%; margin: 0.5em 0 0 0;" placeholder="What's happening?"></textarea>
+			<button id="tweet" class="square_btn" style="position: relative; float: right; right: 10%;"><strong>Tweet</strong></button>
+			<div class="content" style="width:95%; height:33vh; top:27.5vh;">
+				<div id="Myself">
+					<button id="top" class="square_btn" style="position: fixed; width: 18%; top: 60%;"><strong>Myself</strong></button>
+				</div>
+			</div>
+		</div>
+
+		<div style="position: absolute; width: 80%; right: 0;">
+
+			<div class="content">
+				<div id="University">
+					<button id="top" class="square_btn" style="position: fixed; width: 19.2%; top: 2px;"><strong>University</strong></button>
+				</div>
+			</div>
+
+			<div class="content">
+				<div id="MyList">
+					<button id="top" class="square_btn" style="position: fixed; width: 19.2%; top: 2px;"><strong>MyList</strong></button>
+				</div>
+			</div>
+
+			<div class="content">
+				<div id="Kawaii">
+					<button id="top" class="square_btn" style="position: fixed; width: 19.2%; top: 2px;"><strong>Kawaii</strong></button>
+				</div>
+			</div>
+
+			<div class="content">
+				<div id="Timeline">
+					<button id="top" class="square_btn" style="position: fixed; width: 19.2%; top: 2px;"><strong>Timeline</strong></button>
+				</div>
+			</div>
+
+		</div>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<script src="{{ url_for("static", filename="index.js") }}"></script>
+	</body>
+</html>
+

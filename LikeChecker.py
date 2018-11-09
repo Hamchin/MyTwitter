@@ -6,13 +6,12 @@ import sys
 
 class LikeChecker():
 
-    def __init__(self, user_id, list_id = ""):
-        self.user_id = user_id
-        self.list_id = list_id
-        self.twitter = MyTwitter.login()
-        self.friendList = MyTwitter.getListMember(self.twitter, list_id)
-        self.friendList = [friend["id_str"] for friend in self.friendList] + [user_id]
-        self.followList = MyTwitter.getFollowing(self.twitter, user_id)
+    def __init__(self, user_name, list_name = None):
+        self.twitter, self.user_id = MyTwitter.login(user_name)
+        self.list_id = MyTwitter.getID(list_name) if list_name else ""
+        self.friendList = MyTwitter.getListMember(self.twitter, self.list_id)
+        self.friendList = [friend["id_str"] for friend in self.friendList] + [self.user_id]
+        self.followList = MyTwitter.getFollowing(self.twitter, self.user_id)
         self.followList = [user for user in self.followList if user["id_str"] not in self.friendList]
         self.userList = []
 
@@ -72,7 +71,7 @@ if __name__ == '__main__':
     elif len(sys.argv) == 2:
         LikeChecker = LikeChecker(sys.argv[1])
     else:
-        print("Usage: python3 {0} [user_id] ([list_id])".format(sys.argv[0]))
+        print("Usage: python3 {0} [user_name] (list_name)".format(sys.argv[0]))
         sys.exit()
     LikeChecker.setup()
     input("\n")

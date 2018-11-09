@@ -78,11 +78,15 @@ def search(twitter, keyword, MAX):
             print("Error: %d\n" % req.status_code)
             sys.exit()
 
-def execute():
-    twitter = MyTwitter.login()
+def execute(name):
+    twitter, user_id = MyTwitter.login(name)
     keyword, MAX = getKeyword()
     search(twitter, keyword, MAX)
 
 if __name__ == '__main__':
-    execute()
+    try:
+        execute(sys.argv[1])
+    except:
+        print("Usage: python3 {0} [name]".format(sys.argv[0]))
+        sys.exit()
 

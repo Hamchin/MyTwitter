@@ -2,22 +2,37 @@
 # coding: utf-8
 
 from requests_oauthlib import OAuth1Session
-import urllib.request
-import datetime
-import json
-import math
-import sys
-import os
-import re
+import urllib.request, datetime, sqlite3
+import json, math, sys, os, re
 
 # ログイン
-def login():
-    CK = os.environ["CONSUMER_KEY"]
-    CS = os.environ["CONSUMER_SECRET"]
-    AT = os.environ["ACCESS_TOKEN"]
-    AS = os.environ["ACCESS_TOKEN_SECRET"]
+def login(name):
+    connection = sqlite3.connect("twitter.db")
+    cursor = connection.cursor()
+    sql = "SELECT id FROM info WHERE name = ? AND type = ?"
+    cursor.execute(sql, (name, "CK"))
+    CK = cursor.fetchone()[0]
+    cursor.execute(sql, (name, "CS"))
+    CS = cursor.fetchone()[0]
+    cursor.execute(sql, (name, "AT"))
+    AT = cursor.fetchone()[0]
+    cursor.execute(sql, (name, "AS"))
+    AS = cursor.fetchone()[0]
+    cursor.execute(sql, (name, "id"))
+    user_id = cursor.fetchone()[0]
+    connection.close()
     twitter = OAuth1Session(CK, CS, AT, AS)
-    return twitter
+    return twitter, user_id
+
+# ID取得
+def getID(name):
+    connection = sqlite3.connect("twitter.db")
+    cursor = connection.cursor()
+    cursor.execute("SELECT id FROM info WHERE name = ?", (name,))
+    result = cursor.fetchone()
+    connection.close()
+    list_id = result[0] if result != [] else None
+    return list_id
 
 # フォロー中のユーザーリスト取得
 def getFollowing(twitter, user_id):

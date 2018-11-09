@@ -32,30 +32,30 @@ def checkFriendship(twitter, target, source):
         message = target + "\n" + "失踪したゾ"
         MyTwitter.directMessage(twitter, source, message)
 
-def execute(user_id):
-    twitter = MyTwitter.login()
+def execute(name):
+    twitter, user_id = MyTwitter.login(name)
     connection = sqlite3.connect("twitter.db")
     cursor = connection.cursor()
-    cursor.execute("CREATE TABLE IF NOT EXISTS friend (id VARCHAR(255), type VARCHAR(255))")
+    cursor.execute("CREATE TABLE IF NOT EXISTS friend (type, id)")
     followList = []
-    for data in cursor.execute("SELECT id FROM friend WHERE type = ?", (user_id,)):
+    for data in cursor.execute("SELECT id FROM friend WHERE type = ?", (name,)):
         followList.append(data[0])
     followerList = MyTwitter.getFollowerID(twitter, user_id)
     for target in followList:
         if target not in followerList:
             checkFriendship(twitter, target, user_id)
-    cursor.execute("DELETE FROM friend WHERE type = ?", (user_id,))
+    cursor.execute("DELETE FROM friend WHERE type = ?", (name,))
     followList = MyTwitter.getFollowingID(twitter, user_id)
     for data in followList:
-        cursor.execute("INSERT INTO friend (id, type) VALUES (?, ?)", (data, user_id))
+        cursor.execute("INSERT INTO friend (type, id) VALUES (?, ?)", (name, data))
     connection.commit()
     connection.close()
 
 if __name__ == '__main__':
     try:
-        user_id = sys.argv[1]
+        name = sys.argv[1]
     except:
-        print("Usage: python3 {0} [user_id]".format(sys.argv[0]))
+        print("Usage: python3 {0} [name]".format(sys.argv[0]))
         sys.exit()
-    execute(user_id)
+    execute(name)
 

@@ -33,26 +33,20 @@ def getTimeline():
     friendList = MyTwitter.getListMember(twitter, "")
     friendList = [friend["id_str"] for friend in friendList]
     List = MyTwitter.getTimeline(twitter, 200)
-    List = [tweet for tweet in List if not tweet.get("retweeted_status")
-            and tweet["user"]["id_str"] not in friendList
-            and tweet["favorite_count"] > 1]
+    List = [tweet for tweet in List if not tweet.get("retweeted_status") and tweet["user"]["id_str"] not in friendList and tweet["favorite_count"] > 1]
     return list(map(retouch, List))
 
 def getKawaii():
     twitter = MyTwitter.login()
     List = MyTwitter.getListTimeline(twitter, "", 400)
-    List = [tweet["retweeted_status"]
-            if tweet.get("retweeted_status") else tweet for tweet in List]
-    List = [tweet for tweet in List if tweet["entities"].get("media")
-            and tweet["favorite_count"] > 100
-            and not MyTwitter.isTimeover(tweet["created_at"], 7)]
+    List = [tweet["retweeted_status"] if tweet.get("retweeted_status") else tweet for tweet in List]
+    List = [tweet for tweet in List if tweet["entities"].get("media") and tweet["favorite_count"] > 100 and not MyTwitter.isTimeover(tweet["created_at"], 7)]
     return list(map(retouch, List))
 
 def getMyList():
     twitter = MyTwitter.login()
     List = MyTwitter.getListTimeline(twitter, "", 200)
-    List = [tweet["retweeted_status"]
-            if tweet.get("retweeted_status") else tweet for tweet in List]
+    List = [tweet["retweeted_status"] if tweet.get("retweeted_status") else tweet for tweet in List]
     return list(map(retouch, List))
 
 def getUniversity():
@@ -69,21 +63,17 @@ def getMyself():
 def getFavorited():
     twitter = MyTwitter.login()
     List = MyTwitter.getTweetList(twitter, "", 200)[:10]
-    List = [MyTwitter.getFavUserIDList(tweet["id_str"], [""])
-            for tweet in List]
+    List = [MyTwitter.getFavUserIDList(tweet["id_str"], []) for tweet in List]
     List = [user for userList in List for user in userList]
     List = sorted(set(List), key = List.index)
     List = [MyTwitter.getTweetList(twitter, user_id, 200) for user_id in List]
     List = [tweet for tweetList in List for tweet in tweetList]
-    List = sorted(List, key = lambda tweet: time.mktime(
-        time.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
-        ), reverse = True)
+    List = sorted(List, key = lambda tweet: time.mktime(time.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")), reverse = True)
     return list(map(retouch, List))
 
 def retouch(tweet):
     date = tweet["created_at"]
-    date = datetime.datetime.strptime(
-            tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
+    date = datetime.datetime.strptime(tweet["created_at"], "%a %b %d %H:%M:%S +0000 %Y")
     time = datetime.datetime.now() - date - datetime.timedelta(hours = 9)
     if time.days != 0: tweet["time"] = f"{time.days}d"
     elif time.seconds//60 >= 60: tweet["time"] = f"{time.seconds//3600}h"
@@ -145,12 +135,10 @@ def update():
     idList = [tweet["id_str"] for tweet in tweetList[name]]
     List = [tweet for tweet in List if tweet["id_str"] not in idList]
     idList = [tweet["id_str"] for tweet in newList]
-    tweetList[name] = [tweet for tweet in tweetList[name]
-            if tweet["id_str"] not in idList]
+    tweetList[name] = [tweet for tweet in tweetList[name] if tweet["id_str"] not in idList]
     tweetList[name] = (newList + tweetList[name])[:200]
     html = "small.html" if name == "Myself" else "timeline.html"
-    return jsonify(tweetList = json.dumps(tweetList[name]),
-            html = render_template(html, tweetList = List))
+    return jsonify(tweetList = json.dumps(tweetList[name]), html = render_template(html, tweetList = List))
 
 @app.route("/upload", methods = ["POST"])
 def upload():

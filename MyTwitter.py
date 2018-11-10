@@ -276,6 +276,16 @@ def addUser(twitter, list_id, user_id):
     req = twitter.post(url, params = params)
     return req
 
+# リストからユーザー削除
+def deleteUser(twitter, list_id, user_id):
+    url = "https://api.twitter.com/1.1/lists/members/destroy.json"
+    params = {
+            "list_id": list_id,
+            "user_id": user_id
+            }
+    req = twitter.post(url, params = params)
+    return req
+
 # ツイート
 def tweet(twitter, tweet, media = None):
     url_text = "https://api.twitter.com/1.1/statuses/update.json"

@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import MyTwitter
+import time
 import sys
 
 #テキストチェック
@@ -37,8 +38,9 @@ def execute(nameList, list_name):
             tweetList.append(tweet)
     if tweetList == []: return
     tweet = max(tweetList, key = lambda tweet: tweet["favorite_count"])
-    for t in twitter:
-        MyTwitter.postFavorite(t, tweet["id_str"])
+    for account in twitter:
+        MyTwitter.postFavorite(account, tweet["id_str"])
+        time.sleep(120)
     #MyTwitter.addUser(twitter[0], list_id, tweet["user"]["id_str"])
 
 if __name__ == '__main__':

@@ -52,10 +52,11 @@ def execute(name):
     connection.close()
 
 if __name__ == '__main__':
-    try:
-        name = sys.argv[1]
-    except:
+    if len(sys.argv) != 1:
+        nameList = sys.argv[1:]
+    else:
         print("Usage: python3 {0} [name]".format(sys.argv[0]))
         sys.exit()
-    execute(name)
+    for name in nameList:
+        execute(name)
 

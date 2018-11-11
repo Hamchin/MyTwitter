@@ -3,14 +3,13 @@
 from flask import Flask, render_template
 from flask import request, jsonify
 import urllib.request
-import MyTwitter
-import datetime
-import time
-import json
-import sys
-import re
+import MyTwitter, datetime
+import time, json, re
 
 app = Flask(__name__)
+
+app.secret_key = "XIVCDN6QUMTS1C4QUJHD"
+
 image = None
 tweetList = {
         "Timeline": [],
@@ -29,41 +28,41 @@ def getTweetList(name):
     elif name == "Myself": return getMyself()
 
 def getTimeline():
-    twitter = MyTwitter.login()
-    friendList = MyTwitter.getListMember(twitter, "")
+    twitter, user_id = MyTwitter.login("main")
+    friendList = MyTwitter.getListMember(twitter, MyTwitter.getID("Friend"))
     friendList = [friend["id_str"] for friend in friendList]
     List = MyTwitter.getTimeline(twitter, 200)
     List = [tweet for tweet in List if not tweet.get("retweeted_status") and tweet["user"]["id_str"] not in friendList and tweet["favorite_count"] > 1]
     return list(map(retouch, List))
 
 def getKawaii():
-    twitter = MyTwitter.login()
-    List = MyTwitter.getListTimeline(twitter, "", 400)
+    twitter, user_id = MyTwitter.login("main")
+    List = MyTwitter.getListTimeline(twitter, MyTwitter.getID("Kawaii"), 400)
     List = [tweet["retweeted_status"] if tweet.get("retweeted_status") else tweet for tweet in List]
     List = [tweet for tweet in List if tweet["entities"].get("media") and tweet["favorite_count"] > 100 and not MyTwitter.isTimeover(tweet["created_at"], 7)]
     return list(map(retouch, List))
 
 def getMyList():
-    twitter = MyTwitter.login()
-    List = MyTwitter.getListTimeline(twitter, "", 200)
+    twitter, user_id = MyTwitter.login("main")
+    List = MyTwitter.getListTimeline(twitter, MyTwitter.getID("MyList"), 200)
     List = [tweet["retweeted_status"] if tweet.get("retweeted_status") else tweet for tweet in List]
     return list(map(retouch, List))
 
 def getUniversity():
-    twitter = MyTwitter.login()
-    List = MyTwitter.getListTimeline(twitter, "", 200)
+    twitter, user_id = MyTwitter.login("sub")
+    List = MyTwitter.getListTimeline(twitter, MyTwitter.getID("University"), 200)
     List = [tweet for tweet in List if not tweet.get("retweeted_status")]
     return list(map(retouch, List))
 
 def getMyself():
-    twitter = MyTwitter.login()
-    List = MyTwitter.getTweetList(twitter, "", 200)
+    twitter, user_id = MyTwitter.login("main")
+    List = MyTwitter.getTweetList(twitter, user_id, 200)
     return list(map(retouch, List))
 
 def getFavorited():
-    twitter = MyTwitter.login()
-    List = MyTwitter.getTweetList(twitter, "", 200)[:10]
-    List = [MyTwitter.getFavUserIDList(tweet["id_str"], []) for tweet in List]
+    twitter, user_id = MyTwitter.login("main")
+    List = MyTwitter.getTweetList(twitter, user_id, 200)[:10]
+    List = [MyTwitter.getFavUserIDList(tweet["id_str"], [user_id]) for tweet in List]
     List = [user for userList in List for user in userList]
     List = sorted(set(List), key = List.index)
     List = [MyTwitter.getTweetList(twitter, user_id, 200) for user_id in List]
@@ -84,23 +83,12 @@ def retouch(tweet):
 
 @app.route("/")
 def index():
-    global image
-    global tweetList
-    image = None
-    tweetList = {
-            "Timeline": [],
-            "Kawaii": [],
-            "MyList": [],
-            "University": [],
-            "Myself": [],
-            "Favorited": []
-            }
     return render_template("index.html")
 
 @app.route("/tweet", methods = ["POST"])
 def tweet():
     global image
-    twitter = MyTwitter.login()
+    twitter, user_id = MyTwitter.login("main")
     tweet = request.json["tweet"]
     media = request.json["media"]
     if image:
@@ -115,14 +103,14 @@ def tweet():
 
 @app.route("/favorite", methods = ["POST"])
 def favorite():
-    twitter = MyTwitter.login()
+    twitter, user_id = MyTwitter.login("main")
     tweet_id = request.json["tweet_id"]
     req = MyTwitter.postFavorite(twitter, tweet_id)
     return req.text, req.status_code
 
 @app.route("/delete", methods = ["POST"])
 def delete():
-    twitter = MyTwitter.login()
+    twitter, user_id = MyTwitter.login("main")
     tweet_id = request.json["tweet_id"]
     req = MyTwitter.deleteTweet(twitter, tweet_id)
     return req.text, req.status_code
@@ -131,14 +119,11 @@ def delete():
 def update():
     global tweetList
     name = request.json["name"]
-    newList = List = getTweetList(name)
-    idList = [tweet["id_str"] for tweet in tweetList[name]]
-    List = [tweet for tweet in List if tweet["id_str"] not in idList]
-    idList = [tweet["id_str"] for tweet in newList]
-    tweetList[name] = [tweet for tweet in tweetList[name] if tweet["id_str"] not in idList]
-    tweetList[name] = (newList + tweetList[name])[:200]
+    newList = getTweetList(name)
+    List = [tweet for tweet in newList if tweet["id_str"] not in tweetList[name]]
+    tweetList[name] = [tweet["id_str"] for tweet in newList]
     html = "small.html" if name == "Myself" else "timeline.html"
-    return jsonify(tweetList = json.dumps(tweetList[name]), html = render_template(html, tweetList = List))
+    return jsonify(tweetList = json.dumps(newList), html = render_template(html, tweetList = List))
 
 @app.route("/upload", methods = ["POST"])
 def upload():
@@ -150,7 +135,7 @@ def upload():
 
 @app.route("/getFavorite", methods = ["POST"])
 def getFavorite():
-    twitter = MyTwitter.login()
+    twitter, user_id = MyTwitter.login("main")
     tweet_id = request.json["tweet_id"]
     user_id = request.json["user_id"]
     List = MyTwitter.getFavUserIDList(tweet_id, [user_id])
@@ -158,9 +143,6 @@ def getFavorite():
     return jsonify(json.dumps(List))
 
 if __name__ == "__main__":
-    argv = sys.argv
-    if len(argv) != 2: port = 8888
-    else: port = int(argv[1])
     app.debug = True
-    app.run(host = "localhost", port = port)
+    app.run(host = "localhost", port = 8888)
 

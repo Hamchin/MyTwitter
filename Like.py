@@ -65,4 +65,3 @@ if __name__ == '__main__':
     else:
         print("Usage: python3 {0} [name] (list_name)".format(sys.argv[0]))
         sys.exit()
-

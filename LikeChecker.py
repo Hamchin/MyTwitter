@@ -85,4 +85,3 @@ if __name__ == '__main__':
     LikeChecker.showNotLikeUser()
     input("=" * 50 + "\n")
     LikeChecker.showProtectedUser()
-

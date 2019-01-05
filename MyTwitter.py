@@ -306,4 +306,3 @@ def deleteTweet(twitter, tweet_id):
     url = f"https://api.twitter.com/1.1/statuses/destroy/{tweet_id}.json"
     req = twitter.post(url, params = {"id": tweet_id})
     return req
-

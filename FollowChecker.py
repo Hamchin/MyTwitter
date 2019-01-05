@@ -59,4 +59,3 @@ if __name__ == '__main__':
         sys.exit()
     for name in nameList:
         execute(name)
-

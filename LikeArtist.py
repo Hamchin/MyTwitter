@@ -2,7 +2,6 @@
 # coding: utf-8
 
 import MyTwitter
-import time
 import sys
 
 #テキストチェック
@@ -40,8 +39,6 @@ def execute(nameList, list_name):
     tweet = max(tweetList, key = lambda tweet: tweet["favorite_count"])
     for account in twitter:
         MyTwitter.postFavorite(account, tweet["id_str"])
-        time.sleep(120)
-    #MyTwitter.addUser(twitter[0], list_id, tweet["user"]["id_str"])
 
 if __name__ == '__main__':
     if len(sys.argv) > 2:
@@ -49,4 +46,3 @@ if __name__ == '__main__':
     else:
         print("Usage: python3 {0} [name] [list_name]".format(sys.argv[0]))
         sys.exit()
-

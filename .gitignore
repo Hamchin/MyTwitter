@@ -1,2 +1,6 @@
 /__pycache__/
 /twitter.db
+/bin/
+/include/
+/lib/
+/share/

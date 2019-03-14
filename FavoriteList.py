@@ -5,9 +5,10 @@ def execute(user_name, list_name):
     twitter, user_id = MyTwitter.login(user_name)
     idList = [tweet["id_str"] for tweet in MyTwitter.getTweetList(twitter, user_id, 200)]
     userList = []
+    friendList = MyTwitter.getFollowingID(twitter, user_id)
     for tweet_id in idList[:10]:
         userList.extend(MyTwitter.getFavUserIDList(tweet_id, [user_id]))
-    userList = list(set(userList))
+    userList = [user for user in list(set(userList)) if user in friendList]
     list_id = MyTwitter.getID(list_name)
     memberList = [user["id_str"] for user in MyTwitter.getListMember(twitter, list_id)]
     for user_id in [user_id for user_id in memberList if user_id not in userList]:

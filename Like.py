@@ -25,9 +25,11 @@ def getFollowingID(twitter, user_id, list_id):
 def getTopTweet(tweetList):
     niceTweetList = []
     for tweet in tweetList:
-        if tweet["favorited"] == True or MyTwitter.isTimeover(tweet["created_at"], 1) == True:
+        if tweet["favorited"] or MyTwitter.isTimeover(tweet["created_at"], 2):
             break
-        if include(tweet["text"]) == False and tweet["favorite_count"] > 0:
+        elif MyTwitter.isTimeover(tweet["created_at"], 1) and niceTweetList != []:
+            break
+        elif not include(tweet["text"]) and tweet["favorite_count"] > 0:
             niceTweetList.append(tweet)
     if niceTweetList == []:
         return None

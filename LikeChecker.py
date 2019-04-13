@@ -34,6 +34,7 @@ class LikeChecker():
             favUserIDList = MyTwitter.getFavUserIDList(tweet["id_str"], self.friendList)
             userIDList = [user["id_str"] for user in self.userList]
             self.userList.extend([{"id_str": user_id, "text": text} for user_id in favUserIDList if user_id not in userIDList])
+        self.userList = [user for user in self.userList if user["id_str"] in [friend["id_str"] for friend in self.followList]]
 
     def showLikeUser(self):
         nameList = MyTwitter.getUserList(self.twitter, [user["id_str"] for user in self.userList])
@@ -45,6 +46,7 @@ class LikeChecker():
             print(message + "\n")
 
     def showNotLikeUser(self):
+        print("↓ Not Like User ↓" + "\n")
         for friend in self.followList:
             if friend["id_str"] not in [user["id_str"] for user in self.userList] and friend["protected"] == False:
                 print(friend["name"])
@@ -59,8 +61,8 @@ class LikeChecker():
                         message = friend["name"] + "\n"
                         message += "@{0}\n\n".format(friend["screen_name"])
                         message += response
-                        print("=" * 50 + "\n")
                         print(message + "\n")
+                        print("=" * 50 + "\n")
                     break
                 except:
                     time.sleep(60)

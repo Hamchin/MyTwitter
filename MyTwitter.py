@@ -219,9 +219,13 @@ def checkFriendship(twitter, target, source):
     else:
         sys.exit()
 
+# 日付取得
+def getDate(date):
+    return datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
+
 # タイムオーバーチェック
 def isTimeover(date, day):
-    date = datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
+    date = getDate(date)
     date = date + datetime.timedelta(hours = 9)
     standard = datetime.datetime.now()
     standard = standard - datetime.timedelta(days = day)

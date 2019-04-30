@@ -15,10 +15,7 @@ class LikeChecker():
         self.followList = MyTwitter.getFollowing(self.twitter, self.user_id)
         self.followList = [user for user in self.followList if user["id_str"] not in self.friendList]
         self.userList = []
-
-    def getDate(self, date):
-        date = datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
-        return str(date)
+        self.getDate = lambda date: str(MyTwitter.getDate(date))
 
     def checkFavorite(self, user, target):
         tweetList = MyTwitter.getFavTweetList(self.twitter, user["id_str"], 1000, target)

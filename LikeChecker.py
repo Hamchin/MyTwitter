@@ -3,6 +3,7 @@
 import MyTwitter
 import time
 import sys
+import datetime
 
 class LikeChecker():
 
@@ -15,13 +16,17 @@ class LikeChecker():
         self.followList = [user for user in self.followList if user["id_str"] not in self.friendList]
         self.userList = []
 
+    def getDate(self, date):
+        date = datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
+        return str(date)
+
     def checkFavorite(self, user, target):
         tweetList = MyTwitter.getFavTweetList(self.twitter, user["id_str"], 1000, target)
         if tweetList == []: return None
         tweet = tweetList[-1]
         if tweet["user"]["id_str"] == target:
-            return tweet["created_at"] + "\n\n" + tweet["text"]
-        date = "{0} ({1})".format(tweet["created_at"], len(tweetList))
+            return self.getDate(tweet["created_at"]) + "\n\n" + tweet["text"]
+        date = "{0} ({1})".format(self.getDate(tweet["created_at"]), len(tweetList))
         return date + "\n\n" + "Not Found"
 
     def setup(self, count = 2000):
@@ -30,7 +35,7 @@ class LikeChecker():
         for i, tweet in enumerate(tweetList):
             sys.stdout.write("\r{0}%".format(100*i//(len(tweetList)-1)))
             sys.stdout.flush()
-            text = tweet["created_at"] + "\n\n" + tweet["text"]
+            text = self.getDate(tweet["created_at"]) + "\n\n" + tweet["text"]
             favUserIDList = MyTwitter.getFavUserIDList(tweet["id_str"], self.friendList)
             userIDList = [user["id_str"] for user in self.userList]
             self.userList.extend([{"id_str": user_id, "text": text} for user_id in favUserIDList if user_id not in userIDList])

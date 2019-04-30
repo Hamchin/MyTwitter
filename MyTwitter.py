@@ -89,12 +89,13 @@ def getListMember(twitter, list_id):
     else: return []
 
 # IDリストからユーザーリスト取得
-def getUserList(twitter, idList):
+def getUserList(twitter, idList, user_id = True):
     url = "https://api.twitter.com/1.1/users/lookup.json"
+    key = "user_id" if user_id else "screen_name"
     userList = []
     for i in range(math.ceil(len(idList)/100)):
         params = {
-                "user_id": ",".join(idList[i*100:(i+1)*100]),
+                key: ",".join(idList[i*100:(i+1)*100]),
                 "include_entities": False
                 }
         req = twitter.get(url, params = params)

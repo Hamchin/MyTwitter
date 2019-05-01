@@ -2,6 +2,7 @@
 
 import MyTwitter
 import time
+import json
 import sys
 import datetime
 
@@ -14,7 +15,7 @@ class LikeChecker():
         self.friendList = [friend["id_str"] for friend in self.friendList] + [self.user_id]
         self.followList = MyTwitter.getFollowing(self.twitter, self.user_id)
         self.followList = [user for user in self.followList if user["id_str"] not in self.friendList]
-        self.userList = []
+        self.userList, self.data = [], []
         self.getDate = lambda date: str(MyTwitter.getDate(date))
 
     def checkFavorite(self, user, target):
@@ -22,8 +23,11 @@ class LikeChecker():
         if tweetList == []: return None
         tweet = tweetList[-1]
         if tweet["user"]["id_str"] == target:
-            return self.getDate(tweet["created_at"]) + "\n\n" + tweet["text"]
+            date = self.getDate(tweet["created_at"])
+            self.data.append({"id_str": user["id_str"], "date": date})
+            return date + "\n\n" + tweet["text"]
         date = "{0} ({1})".format(self.getDate(tweet["created_at"]), len(tweetList))
+        self.data.append({"id_str": user["id_str"], "date": None})
         return date + "\n\n" + "Not Found"
 
     def setup(self, count = 2000):
@@ -32,11 +36,15 @@ class LikeChecker():
         for i, tweet in enumerate(tweetList):
             sys.stdout.write("\r{0}%".format(100*i//(len(tweetList)-1)))
             sys.stdout.flush()
-            text = self.getDate(tweet["created_at"]) + "\n\n" + tweet["text"]
+            date = self.getDate(tweet["created_at"])
+            text = date + "\n\n" + tweet["text"]
             favUserIDList = MyTwitter.getFavUserIDList(tweet["id_str"], self.friendList)
             userIDList = [user["id_str"] for user in self.userList]
             self.userList.extend([{"id_str": user_id, "text": text} for user_id in favUserIDList if user_id not in userIDList])
-        self.userList = [user for user in self.userList if user["id_str"] in [friend["id_str"] for friend in self.followList]]
+            self.data.extend([{"id_str": user_id, "date": date} for user_id in favUserIDList if user_id not in userIDList])
+        followList = [friend["id_str"] for friend in self.followList]
+        self.userList = [user for user in self.userList if user["id_str"] in followList]
+        self.data = [d for d in self.data if d['id_str'] in followList]
 
     def showLikeUser(self):
         nameList = MyTwitter.getUserList(self.twitter, [user["id_str"] for user in self.userList])
@@ -53,6 +61,7 @@ class LikeChecker():
             if friend["id_str"] not in [user["id_str"] for user in self.userList] and friend["protected"] == False:
                 print(friend["name"])
                 print("@" + friend["screen_name"] + "\n")
+                self.data.append({"id_str": friend["id_str"], "date": None})
 
     def showProtectedUser(self):
         for i, friend in enumerate(self.followList):
@@ -89,3 +98,4 @@ if __name__ == '__main__':
     LikeChecker.showNotLikeUser()
     input("=" * 50 + "\n")
     LikeChecker.showProtectedUser()
+    # json.dump(LikeChecker.data, open('date.json', 'w'))

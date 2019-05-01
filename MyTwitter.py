@@ -221,7 +221,11 @@ def checkFriendship(twitter, target, source):
 
 # 日付取得
 def getDate(date):
-    return datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
+    try:
+        date = datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
+    except:
+        date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+    return date
 
 # タイムオーバーチェック
 def isTimeover(date, day):

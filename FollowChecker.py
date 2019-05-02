@@ -55,7 +55,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 1:
         nameList = sys.argv[1:]
     else:
-        print("Usage: python3 {0} [name]".format(sys.argv[0]))
+        print("Usage: python3 {0} [user_type]".format(sys.argv[0]))
         sys.exit()
     for name in nameList:
         execute(name)

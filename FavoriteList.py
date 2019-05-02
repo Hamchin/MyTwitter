@@ -20,5 +20,5 @@ if __name__ == '__main__':
     try:
         execute(sys.argv[1], sys.argv[2])
     except:
-        print("Usage: python3 {0} [name] [list_name]".format(sys.argv[0]))
+        print("Usage: python3 {0} [user_type] [list_name]".format(sys.argv[0]))
         sys.exit()

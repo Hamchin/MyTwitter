@@ -87,6 +87,6 @@ if __name__ == '__main__':
     try:
         execute(sys.argv[1])
     except:
-        print("Usage: python3 {0} [name]".format(sys.argv[0]))
+        print("Usage: python3 {0} [user_type]".format(sys.argv[0]))
         sys.exit()
 

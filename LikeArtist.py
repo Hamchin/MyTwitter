@@ -44,5 +44,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 2:
         execute(sys.argv[1:-1], sys.argv[-1])
     else:
-        print("Usage: python3 {0} [name] [list_name]".format(sys.argv[0]))
+        print("Usage: python3 {0} [user_type] [list_name]".format(sys.argv[0]))
         sys.exit()

@@ -84,7 +84,7 @@ if __name__ == '__main__':
     elif len(sys.argv) == 2:
         LikeChecker = LikeChecker(sys.argv[1])
     else:
-        print("Usage: python3 {0} [user_name] (list_name)".format(sys.argv[0]))
+        print("Usage: python3 {0} [user_type] (exception_list_name)".format(sys.argv[0]))
         sys.exit()
     LikeChecker.setup()
     input("\n")
@@ -98,4 +98,5 @@ if __name__ == '__main__':
     LikeChecker.showNotLikeUser()
     input("=" * 50 + "\n")
     LikeChecker.showProtectedUser()
-    # json.dump(LikeChecker.data, open('date.json', 'w'))
+    save = input("Type something if you want to save. > ")
+    if save: json.dump(LikeChecker.data, open('date.json', 'w'))

@@ -154,7 +154,7 @@ def getListTimeline(twitter, list_id, count):
     return tweetList
 
 # お気に入り登録したツイートリスト取得
-def getFavTweetList(twitter, user_id, count, target = ""):
+def getFavTweetList(twitter, user_id, count, target = "", raiseError = False):
     url = "https://api.twitter.com/1.1/favorites/list.json"
     tweetList = []
     params = {
@@ -172,6 +172,8 @@ def getFavTweetList(twitter, user_id, count, target = ""):
                 if tweet["user"]["id_str"] == target:
                     return tweetList
             params["max_id"] = tweets[-1]["id_str"]
+        elif raiseError:
+            sys.exit()
     return tweetList
 
 # お気に入り登録したユーザーIDリスト取得

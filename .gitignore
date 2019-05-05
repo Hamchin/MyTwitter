@@ -6,5 +6,5 @@ lib/
 etc/
 twitter.db
 *.json
-*.hdf5
+*.h5
 .*

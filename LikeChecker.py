@@ -20,7 +20,7 @@ class LikeChecker():
         self.getDate = lambda date: str(MyTwitter.getDate(date))
 
     def checkFavorite(self, user, target):
-        tweetList = MyTwitter.getFavTweetList(self.twitter, user["id_str"], 1000, target)
+        tweetList = MyTwitter.getFavTweetList(self.twitter, user["id_str"], 1000, target, loop = True, verbose = False)
         if tweetList == []: return None
         tweet = tweetList[-1]
         if tweet["user"]["id_str"] == target:

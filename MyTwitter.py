@@ -3,7 +3,7 @@
 
 from requests_oauthlib import OAuth1Session
 import urllib.request, datetime, sqlite3
-import json, math, sys, os, re
+import json, math, time, sys, os, re
 
 # ログイン
 def login(name):
@@ -154,16 +154,15 @@ def getListTimeline(twitter, list_id, count):
     return tweetList
 
 # お気に入り登録したツイートリスト取得
-def getFavTweetList(twitter, user_id, count, target = "", raiseError = False):
+def getFavTweetList(twitter, user_id, count, target = "", loop = False, verbose = False):
     url = "https://api.twitter.com/1.1/favorites/list.json"
-    tweetList = []
+    tweetList, proceed = [], 0
     params = {
             "user_id": user_id,
             "count": 200,
             "exclude_replies": True
             }
-
-    for i in range(count//200):
+    while proceed < count:
         req = twitter.get(url, params = params)
         if req.status_code == 200:
             tweets = json.loads(req.text)
@@ -171,9 +170,18 @@ def getFavTweetList(twitter, user_id, count, target = "", raiseError = False):
                 tweetList.append(tweet)
                 if tweet["user"]["id_str"] == target:
                     return tweetList
-            params["max_id"] = tweets[-1]["id_str"]
-        elif raiseError:
-            sys.exit()
+            try:
+                params["max_id"] = tweets[-1]["id_str"]
+            except:
+                return tweetList
+            if verbose:
+                sys.stdout.write("\rCOUNT: {0}".format(proceed))
+                sys.stdout.flush()
+        elif loop:
+            time.sleep(60)
+            proceed -= 200
+        proceed += 200
+    if verbose: print()
     return tweetList
 
 # お気に入り登録したユーザーIDリスト取得

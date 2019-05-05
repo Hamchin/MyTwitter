@@ -48,7 +48,10 @@ def getFollowing(twitter, user_id):
             for user in json.loads(req.text)["users"]:
                 userList.append(user)
             params["cursor"] = json.loads(req.text)["next_cursor_str"]
-        if params["cursor"] == "0": break
+        else:
+            break
+        if params["cursor"] == "0":
+            break
     return userList
 
 # フォロー中のユーザーIDリスト取得
@@ -60,8 +63,10 @@ def getFollowingID(twitter, user_id):
             "count": 1500
             }
     req = twitter.get(url, params = params)
-    if req.status_code == 200: return json.loads(req.text)["ids"]
-    else: return []
+    if req.status_code == 200:
+        return json.loads(req.text)["ids"]
+    else:
+        return []
 
 # フォロワーのユーザーIDリスト取得
 def getFollowerID(twitter, user_id):
@@ -72,8 +77,10 @@ def getFollowerID(twitter, user_id):
             "count": 1500
             }
     req = twitter.get(url, params = params)
-    if req.status_code == 200: return json.loads(req.text)["ids"]
-    else: return []
+    if req.status_code == 200:
+        return json.loads(req.text)["ids"]
+    else:
+        return []
 
 # リストのメンバーリスト取得
 def getListMember(twitter, list_id):
@@ -85,8 +92,10 @@ def getListMember(twitter, list_id):
             "count": 5000
             }
     req = twitter.get(url, params = params)
-    if req.status_code == 200: return json.loads(req.text)["users"]
-    else: return []
+    if req.status_code == 200:
+        return json.loads(req.text)["users"]
+    else:
+        return []
 
 # IDリストからユーザーリスト取得
 def getUserList(twitter, idList, user_id = True):

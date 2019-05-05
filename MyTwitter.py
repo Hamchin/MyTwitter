@@ -154,7 +154,7 @@ def getListTimeline(twitter, list_id, count):
     return tweetList
 
 # お気に入り登録したツイートリスト取得
-def getFavTweetList(twitter, user_id, count, target = "", loop = False, verbose = False):
+def getFavTweetList(twitter, user_id, count, target = "", loop = False, verbose = False, day = 0):
     url = "https://api.twitter.com/1.1/favorites/list.json"
     tweetList, proceed = [], 0
     params = {
@@ -164,6 +164,7 @@ def getFavTweetList(twitter, user_id, count, target = "", loop = False, verbose 
             }
     while proceed < count:
         req = twitter.get(url, params = params)
+        proceed += 200
         if req.status_code == 200:
             tweets = json.loads(req.text)
             for tweet in tweets:
@@ -177,10 +178,11 @@ def getFavTweetList(twitter, user_id, count, target = "", loop = False, verbose 
             if verbose:
                 sys.stdout.write("\rCOUNT: {0}".format(proceed))
                 sys.stdout.flush()
+            if day and isTimeover(tweets[-1]["created_at"], day):
+                return tweetList
         elif loop:
             time.sleep(60)
             proceed -= 200
-        proceed += 200
     if verbose: print()
     return tweetList
 

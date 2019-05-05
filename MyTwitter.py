@@ -179,15 +179,18 @@ def getFavTweetList(twitter, user_id, count, target = "", loop = False, verbose 
             for tweet in tweets:
                 tweetList.append(tweet)
                 if tweet["user"]["id_str"] == target:
+                    if verbose: print()
                     return tweetList
             try:
                 params["max_id"] = tweets[-1]["id_str"]
             except:
+                if verbose: print()
                 return tweetList
             if verbose:
                 sys.stdout.write("\rCOUNT: {0}".format(proceed))
                 sys.stdout.flush()
             if day and isTimeover(tweets[-1]["created_at"], day):
+                if verbose: print()
                 return tweetList
         elif loop:
             time.sleep(60)

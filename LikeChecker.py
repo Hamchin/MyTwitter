@@ -16,7 +16,7 @@ class LikeChecker():
         self.friendList = [friend["id_str"] for friend in self.friendList] + [self.user_id]
         self.followList = MyTwitter.getFollowing(self.twitter, self.user_id)
         self.followList = [user for user in self.followList if user["id_str"] not in self.friendList]
-        self.userList, self.data = [], []
+        self.userList = []
         self.getDate = lambda date: str(MyTwitter.getDate(date))
 
     def checkFavorite(self, user, target):
@@ -25,10 +25,8 @@ class LikeChecker():
         tweet = tweetList[-1]
         if tweet["user"]["id_str"] == target:
             date = self.getDate(tweet["created_at"])
-            self.data.append({"id_str": user["id_str"], "date": date})
             return date + "\n\n" + tweet["text"]
         date = "{0} ({1})".format(self.getDate(tweet["created_at"]), len(tweetList))
-        self.data.append({"id_str": user["id_str"], "date": None})
         return date + "\n\n" + "Not Found"
 
     def setup(self, count = 2000):
@@ -42,17 +40,15 @@ class LikeChecker():
             favUserIDList = MyTwitter.getFavUserIDList(tweet["id_str"], self.friendList)
             userIDList = [user["id_str"] for user in self.userList]
             self.userList.extend([{"id_str": user_id, "text": text} for user_id in favUserIDList if user_id not in userIDList])
-            self.data.extend([{"id_str": user_id, "date": date} for user_id in favUserIDList if user_id not in userIDList])
         followList = [friend["id_str"] for friend in self.followList]
         self.userList = [user for user in self.userList if user["id_str"] in followList]
-        self.data = [d for d in self.data if d['id_str'] in followList]
 
     @timeout_decorator.timeout(10)
     def showLikeUser(self):
         nameList = MyTwitter.getUserList(self.twitter, [user["id_str"] for user in self.userList])
         for i, user in enumerate(self.userList):
             message = "{0}: {1}\n".format(i+1, nameList[i]["name"])
-            message += "@{0}\n\n".format(nameList[i]["screen_name"])
+            message += "https://twitter.com/{0}\n\n".format(nameList[i]["screen_name"])
             message += user["text"]
             print("=" * 50 + "\n")
             print(message + "\n")
@@ -62,8 +58,7 @@ class LikeChecker():
         for friend in self.followList:
             if friend["id_str"] not in [user["id_str"] for user in self.userList] and friend["protected"] == False:
                 print(friend["name"])
-                print("@" + friend["screen_name"] + "\n")
-                self.data.append({"id_str": friend["id_str"], "date": None})
+                print("https://twitter.com/" + friend["screen_name"] + "\n")
 
     def showProtectedUser(self):
         for i, friend in enumerate(self.followList):
@@ -72,7 +67,7 @@ class LikeChecker():
                     response = self.checkFavorite(friend, self.user_id)
                     if response is not None:
                         message = friend["name"] + "\n"
-                        message += "@{0}\n\n".format(friend["screen_name"])
+                        message += "https://twitter.com/{0}\n\n".format(friend["screen_name"])
                         message += response
                         print(message + "\n")
                         print("=" * 50 + "\n")
@@ -100,5 +95,3 @@ if __name__ == '__main__':
     LikeChecker.showNotLikeUser()
     input("=" * 50 + "\n")
     LikeChecker.showProtectedUser()
-    save = input("Type something if you want to save. > ")
-    if save: json.dump(LikeChecker.data, open('date.json', 'w'))

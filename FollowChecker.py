@@ -37,17 +37,15 @@ def execute(name):
     connection = sqlite3.connect("twitter.db")
     cursor = connection.cursor()
     cursor.execute("CREATE TABLE IF NOT EXISTS friend (type, id)")
-    followList = []
-    for data in cursor.execute("SELECT id FROM friend WHERE type = ?", (name,)):
-        followList.append(data[0])
+    friendList = [data[0] for data in cursor.execute("SELECT id FROM friend WHERE type = ?", (name,))]
     followerList = MyTwitter.getFollowerID(twitter, user_id)
-    for target in followList:
+    for target in friendList:
         if target not in followerList:
             checkFriendship(twitter, target, user_id)
     cursor.execute("DELETE FROM friend WHERE type = ?", (name,))
-    followList = MyTwitter.getFollowingID(twitter, user_id)
-    for data in followList:
-        cursor.execute("INSERT INTO friend (type, id) VALUES (?, ?)", (name, data))
+    friendList = MyTwitter.getFollowerID(twitter, user_id)
+    for user_id in friendList:
+        cursor.execute("INSERT INTO friend (type, id) VALUES (?, ?)", (name, user_id))
     connection.commit()
     connection.close()
 

@@ -98,13 +98,12 @@ def getListMember(twitter, list_id):
         return []
 
 # IDリストからユーザーリスト取得
-def getUserList(twitter, idList, user_id = True):
+def getUserList(twitter, idList):
     url = "https://api.twitter.com/1.1/users/lookup.json"
-    key = "user_id" if user_id else "screen_name"
     userList = []
     for i in range(math.ceil(len(idList)/100)):
         params = {
-                key: ",".join(idList[i*100:(i+1)*100]),
+                "user_id": ",".join(idList[i*100:(i+1)*100]),
                 "include_entities": False
                 }
         req = twitter.get(url, params = params)
@@ -163,7 +162,7 @@ def getListTimeline(twitter, list_id, count):
     return tweetList
 
 # お気に入り登録したツイートリスト取得
-def getFavTweetList(twitter, user_id, count, target = "", loop = False, verbose = False, day = 0):
+def getFavTweetList(twitter, user_id, count, target = "", loop = False, day = 0):
     url = "https://api.twitter.com/1.1/favorites/list.json"
     tweetList, proceed = [], 0
     params = {
@@ -179,23 +178,16 @@ def getFavTweetList(twitter, user_id, count, target = "", loop = False, verbose 
             for tweet in tweets:
                 tweetList.append(tweet)
                 if tweet["user"]["id_str"] == target:
-                    if verbose: print()
                     return tweetList
             try:
                 params["max_id"] = tweets[-1]["id_str"]
             except:
-                if verbose: print()
                 return tweetList
-            if verbose:
-                sys.stdout.write("\rCOUNT: {0}".format(proceed))
-                sys.stdout.flush()
             if day and isTimeover(tweets[-1]["created_at"], day):
-                if verbose: print()
                 return tweetList
         elif loop:
             time.sleep(60)
             proceed -= 200
-    if verbose: print()
     return tweetList
 
 # お気に入り登録したユーザーIDリスト取得

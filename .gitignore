@@ -5,6 +5,4 @@ bin/
 lib/
 etc/
 twitter.db
-*.json
-*.h5
 .*

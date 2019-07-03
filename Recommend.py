@@ -1,17 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 import MyTwitter
 import random
 import sqlite3
 import json
-
-
-# In[ ]:
-
 
 def getFriends(name):
     twitter, user_id = MyTwitter.login(name)
@@ -114,10 +104,6 @@ def showData(data):
             print(f"{k}\t{v}")
         print(f"link: https://twitter.com/{d['screen_name']}\n")
 
-
-# In[ ]:
-
-
 if __name__ == '__main__':
     while True:
         print("1: showFriends()")
@@ -141,4 +127,3 @@ if __name__ == '__main__':
             print('=' * 50, '\n', sep = '')
             showData(data)
             print('=' * 50, '\n', sep = '')
-

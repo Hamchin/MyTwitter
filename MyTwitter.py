@@ -106,7 +106,7 @@ def getUserList(twitter, idList):
                 "user_id": ",".join(idList[i*100:(i+1)*100]),
                 "include_entities": False
                 }
-        req = twitter.get(url, params = params)
+        req = twitter.get(url, params = params, timeout = 10)
         if req.status_code == 200:
             userList.extend(json.loads(req.text))
     return userList

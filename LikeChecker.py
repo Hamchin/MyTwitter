@@ -5,7 +5,6 @@ import time
 import json
 import sys
 import datetime
-import timeout_decorator
 
 class LikeChecker():
 
@@ -43,7 +42,6 @@ class LikeChecker():
         followList = [friend["id_str"] for friend in self.followList]
         self.userList = [user for user in self.userList if user["id_str"] in followList]
 
-    @timeout_decorator.timeout(10)
     def showLikeUser(self):
         nameList = MyTwitter.getUserList(self.twitter, [user["id_str"] for user in self.userList])
         for i, user in enumerate(self.userList):

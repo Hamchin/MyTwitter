@@ -1,10 +1,10 @@
-import MyTwitter, random, json
+import MyTwitter, random, json, sys, pickle
 
 def get_friends(name):
     twitter, user_id = MyTwitter.login(name)
     with open('data/follower.pickle', 'rb') as f:
         friends = pickle.load(f)
-    friends = MyTwitter.get_user_list(twitter, friends)
+    friends = MyTwitter.get_user_list(twitter, friends[name])
     return friends
 
 def get_fav_data(tweets, day):
@@ -48,19 +48,19 @@ def preprocess(twitter, users, count = 0):
         data.append(data_dict)
     return data
 
-def show_friends():
-    friends = get_friends('main')
+def show_friends(name):
+    friends = get_friends(name)
     for friend in friends:
         print(f"{friend['name']}\n{friend['id_str']}\n")
 
-def get_data_from_target(user_id):
-    twitter, _ = MyTwitter.login('main')
+def get_data_from_target(name, user_id):
+    twitter, _ = MyTwitter.login(name)
     users = MyTwitter.get_following(twitter, user_id)
     data = preprocess(twitter, users)
     return data
 
-def get_data_from_tag():
-    twitter, user_id = MyTwitter.login('main')
+def get_data_from_tag(name):
+    twitter, user_id = MyTwitter.login(name)
     tag_list = [
         "#ハムスター",
         "#ハムスターのいる生活",
@@ -99,6 +99,11 @@ def show_data(data):
         print(f"link: https://twitter.com/{d['screen_name']}\n")
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        name = sys.argv[1]
+    else:
+        print("Usage: python3 {0} [user_type]".format(sys.argv[0]))
+        sys.exit()
     while True:
         print("1: show_friends()")
         print("2: get_data_from_target(user_id)")
@@ -106,18 +111,18 @@ if __name__ == '__main__':
         mode = int(input("\n>> "))
         if mode == 1:
             print('\n', '=' * 50, '\n', sep = '')
-            show_friends()
+            show_friends(name)
             print('=' * 50, '\n', sep = '')
         elif mode == 2:
             user_id = input("\nuser_id: ")
             print('\n', '=' * 50, '\n', sep = '')
-            data = get_data_from_target(user_id)
+            data = get_data_from_target(name, user_id)
             print('=' * 50, '\n', sep = '')
             show_data(data)
             print('=' * 50, '\n', sep = '')
         elif mode == 3:
             print('\n', '=' * 50, '\n', sep = '')
-            data = get_data_from_tag()
+            data = get_data_from_tag(name)
             print('=' * 50, '\n', sep = '')
             show_data(data)
             print('=' * 50, '\n', sep = '')

@@ -1,21 +1,15 @@
-import MyTwitter
-import random
-import sqlite3
-import json
+import MyTwitter, random, json
 
-def getFriends(name):
+def get_friends(name):
     twitter, user_id = MyTwitter.login(name)
-    connection = sqlite3.connect('twitter.db')
-    cursor = connection.cursor()
-    friends = []
-    for data in cursor.execute("SELECT id FROM friend WHERE type = ?", (name,)):
-        friends.append(data[0])
-    friends = MyTwitter.getUserList(twitter, friends)
+    with open('data/follower.pickle', 'rb') as f:
+        friends = pickle.load(f)
+    friends = MyTwitter.get_user_list(twitter, friends)
     return friends
 
-def getFavData(tweets, day):
-    tweets_after = [t for t in tweets if not MyTwitter.isTimeover(t['created_at'], day)]
-    tweets_before = [t['id_str'] for t in tweets if not MyTwitter.isTimeover(t['created_at'], day - 1)]
+def get_fav_data(tweets, day):
+    tweets_after = [t for t in tweets if not MyTwitter.is_timeover(t['created_at'], day)]
+    tweets_before = [t['id_str'] for t in tweets if not MyTwitter.is_timeover(t['created_at'], day - 1)]
     tweets_after = [t for t in tweets_after if t['id_str'] not in tweets_before]
     favourites = len(tweets_after)
     favourites_people = len(list(set([(t['user']['id_str'], t['user']['screen_name']) for t in tweets_after])))
@@ -26,14 +20,14 @@ def preprocess(twitter, users, count = 0):
     print("Number of User")
     print(f"Before:\t{len(users)}")
     users = [user for user in users if user['followers_count'] < user['friends_count'] < 800]
-    relations = MyTwitter.getFriendship(twitter, userIDList = [user['id_str'] for user in users])
+    relations = MyTwitter.get_friendship(twitter, user_id_list = [user['id_str'] for user in users])
     users = [user for user, relation in zip(users, relations) if 'following' not in relation['connections']]
     print(f"After:\t{len(users)}\n")
     users = random.sample(users, count) if count else users
     for i, user in enumerate(users):
         if user['protected']: continue
         print(f"{i+1} / {len(users)}")
-        tweets = MyTwitter.getFavTweetList(twitter, user['id_str'], 5000, loop = True, day = 5)
+        tweets = MyTwitter.get_fav_tweet_list(twitter, user['id_str'], 5000, loop = True, day = 5)
         print(f"Tweets: {len(tweets)}", end = '\t')
         tweets = [t for t in tweets if t['retweet_count'] < 20 and t['favorite_count'] < 50 and not t['entities'].get('media')]
         print(f"Preprocess: {len(tweets)}\n")
@@ -46,33 +40,33 @@ def preprocess(twitter, users, count = 0):
             'statuses_count': user['statuses_count'],
             'favourites_count': user['favourites_count']
         }
-        data_dict['favourites_1day'], data_dict['favourites_people_1day'] = getFavData(tweets, 1)
-        data_dict['favourites_2day'], data_dict['favourites_people_2day'] = getFavData(tweets, 2)
-        data_dict['favourites_3day'], data_dict['favourites_people_3day'] = getFavData(tweets, 3)
-        data_dict['favourites_4day'], data_dict['favourites_people_4day'] = getFavData(tweets, 4)
-        data_dict['favourites_5day'], data_dict['favourites_people_5day'] = getFavData(tweets, 5)
+        data_dict['favourites_1day'], data_dict['favourites_people_1day'] = get_fav_data(tweets, 1)
+        data_dict['favourites_2day'], data_dict['favourites_people_2day'] = get_fav_data(tweets, 2)
+        data_dict['favourites_3day'], data_dict['favourites_people_3day'] = get_fav_data(tweets, 3)
+        data_dict['favourites_4day'], data_dict['favourites_people_4day'] = get_fav_data(tweets, 4)
+        data_dict['favourites_5day'], data_dict['favourites_people_5day'] = get_fav_data(tweets, 5)
         data.append(data_dict)
     return data
 
-def showFriends():
-    friends = getFriends('main')
+def show_friends():
+    friends = get_friends('main')
     for friend in friends:
         print(f"{friend['name']}\n{friend['id_str']}\n")
 
-def getDataFromTarget(user_id):
+def get_data_from_target(user_id):
     twitter, _ = MyTwitter.login('main')
-    users = MyTwitter.getFollowing(twitter, user_id)
+    users = MyTwitter.get_following(twitter, user_id)
     data = preprocess(twitter, users)
     return data
 
-def getDataFromTag():
+def get_data_from_tag():
     twitter, user_id = MyTwitter.login('main')
-    tagList = [
+    tag_list = [
         "#ハムスター",
         "#ハムスターのいる生活",
         "#ハムスター好きと繋がりたい"
     ]
-    keyword = " OR ".join(tagList)
+    keyword = " OR ".join(tag_list)
     url = "https://api.twitter.com/1.1/search/tweets.json"
     params = {
         'q': keyword,
@@ -80,22 +74,22 @@ def getDataFromTag():
         'result_type': 'recent',
         'count': 100
     }
-    tweetList, users = [], []
+    tweet_list, users = [], []
     for i in range(50):
-        req = twitter.get(url, params = params)
-        if req.status_code == 200:
-            timeline = json.loads(req.text)
-            tweetList.extend(timeline['statuses'])
+        res = twitter.get(url, params = params)
+        if res.status_code == 200:
+            timeline = json.loads(res.text)
+            tweet_list.extend(timeline['statuses'])
         else:
             break
-    userList = [tweet['user'] for tweet in tweetList if tweet['entities']['user_mentions'] == [] and tweet['entities']['urls'] == [] and tweet['entities'].get('media')]
-    for user in userList:
+    user_list = [tweet['user'] for tweet in tweet_list if tweet['entities']['user_mentions'] == [] and tweet['entities']['urls'] == [] and tweet['entities'].get('media')]
+    for user in user_list:
         if user not in users:
             users.append(user)
     data = preprocess(twitter, users)
     return data
 
-def showData(data):
+def show_data(data):
     key = lambda i: f'favourites_people_{i}day'
     total = lambda d: d[key(1)] + d[key(2)] + d[key(3)] + d[key(4)] + d[key(5)]
     data = sorted(data, key = lambda d: total(d), reverse = True)
@@ -106,24 +100,24 @@ def showData(data):
 
 if __name__ == '__main__':
     while True:
-        print("1: showFriends()")
-        print("2: getDataFromTarget(user_id)")
-        print("3: getDataFromTag()")
+        print("1: show_friends()")
+        print("2: get_data_from_target(user_id)")
+        print("3: get_data_from_tag()")
         mode = int(input("\n>> "))
         if mode == 1:
             print('\n', '=' * 50, '\n', sep = '')
-            showFriends()
+            show_friends()
             print('=' * 50, '\n', sep = '')
         elif mode == 2:
             user_id = input("\nuser_id: ")
             print('\n', '=' * 50, '\n', sep = '')
-            data = getDataFromTarget(user_id)
+            data = get_data_from_target(user_id)
             print('=' * 50, '\n', sep = '')
-            showData(data)
+            show_data(data)
             print('=' * 50, '\n', sep = '')
         elif mode == 3:
             print('\n', '=' * 50, '\n', sep = '')
-            data = getDataFromTag()
+            data = get_data_from_tag()
             print('=' * 50, '\n', sep = '')
-            showData(data)
+            show_data(data)
             print('=' * 50, '\n', sep = '')

@@ -1,8 +1,4 @@
 __pycache__/
-include/
-share/
-bin/
-lib/
-etc/
-twitter.db
+Python/
+data/
 .*

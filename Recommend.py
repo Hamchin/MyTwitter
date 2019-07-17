@@ -1,9 +1,9 @@
-import MyTwitter, random, json, sys, pickle
+import MyTwitter, random, json, sys, json
 
 def get_friends(name):
     twitter, user_id = MyTwitter.login(name)
-    with open('data/follower.pickle', 'rb') as f:
-        friends = pickle.load(f)
+    with open('data/follower.json', 'r') as f:
+        friends = json.load(f)
     friends = MyTwitter.get_user_list(twitter, friends[name])
     return friends
 

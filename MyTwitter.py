@@ -1,11 +1,11 @@
 from requests_oauthlib import OAuth1Session
-import urllib.request, datetime, pickle
+import urllib.request, datetime
 import json, math, time, sys, os, re
 
 # ログイン
 def login(name):
-    with open('data/account.pickle', 'rb') as f:
-        account = pickle.load(f)
+    with open('data/account.json', 'r') as f:
+        account = json.load(f)
     CK = account[name]['CK']
     CS = account[name]['CS']
     AT = account[name]['AT']
@@ -16,8 +16,8 @@ def login(name):
 
 # ID取得
 def get_list_id(name):
-    with open('data/lists.pickle', 'rb') as f:
-        lists = pickle.load(f)
+    with open('data/lists.json', 'r') as f:
+        lists = json.load(f)
     list_id = lists.get(name, None)
     return list_id
 

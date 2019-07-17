@@ -1,4 +1,4 @@
-import MyTwitter, sys, pickle
+import MyTwitter, sys, json
 
 #ワードチェック
 def include(text):
@@ -33,14 +33,14 @@ def get_top_tweet(tweet_list):
 
 def execute(name, list_name = None):
     twitter, user_id = MyTwitter.login(name)
-    with open('data/favorite.pickle', 'rb') as f:
-        user_list = pickle.load(f)
+    with open('data/favorite.json', 'r') as f:
+        user_list = json.load(f)
     if user_list[name] == []:
         list_id = MyTwitter.get_list_id(list_name) if list_name else ""
         user_list[name] = get_following_id(twitter, user_id, list_id)
     target = user_list[name].pop(0)
-    with open('data/favorite.pickle', 'wb') as f:
-        pickle.dump(user_list, f)
+    with open('data/favorite.json', 'w') as f:
+        json.dump(user_list, f)
     tweet_list = MyTwitter.get_tweet_list(twitter, target, 200)
     top_tweet = get_top_tweet(tweet_list)
     friendship = MyTwitter.get_friendship(twitter, [target])[0]["connections"]

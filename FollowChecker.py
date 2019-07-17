@@ -1,4 +1,4 @@
-import MyTwitter, sys, pickle
+import MyTwitter, sys, json
 
 #リレーションシップチェック
 def check_friendship(twitter, target, source):
@@ -29,15 +29,15 @@ def check_friendship(twitter, target, source):
 
 def execute(name):
     twitter, user_id = MyTwitter.login(name)
-    with open('data/follower.pickle', 'rb') as f:
-        friend_list = pickle.load(f)
+    with open('data/follower.json', 'r') as f:
+        friend_list = json.load(f)
     follower_list = MyTwitter.get_follower_id(twitter, user_id)
     for target in friend_list[name]:
         if target not in follower_list:
             check_friendship(twitter, target, user_id)
     friend_list[name] = MyTwitter.get_follower_id(twitter, user_id)
-    with open('data/follower.pickle', 'wb') as f:
-        pickle.dump(friend_list, f)
+    with open('data/follower.json', 'w') as f:
+        json.dump(friend_list, f)
 
 if __name__ == '__main__':
     if len(sys.argv) != 1:

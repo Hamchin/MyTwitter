@@ -19,7 +19,7 @@ def execute(name, list_name):
     for user_id in [user_id for user_id in user_list if user_id not in member_list]:
         MyTwitter.add_user(twitter, list_id, user_id)
     with open('data/favored.json', 'w') as f:
-        json.dump(favored, f)
+        json.dump(favored, f, indent = 4)
 
 if __name__ == '__main__':
     try:

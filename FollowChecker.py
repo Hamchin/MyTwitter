@@ -37,7 +37,7 @@ def execute(name):
             check_friendship(twitter, target, user_id)
     friend_list[name] = MyTwitter.get_follower_id(twitter, user_id)
     with open('data/follower.json', 'w') as f:
-        json.dump(friend_list, f)
+        json.dump(friend_list, f, indent = 4)
 
 if __name__ == '__main__':
     if len(sys.argv) != 1:

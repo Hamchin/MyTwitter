@@ -40,7 +40,7 @@ def execute(name, list_name = None):
         user_list[name] = get_following_id(twitter, user_id, list_id)
     target = user_list[name].pop(0)
     with open('data/favorite.json', 'w') as f:
-        json.dump(user_list, f)
+        json.dump(user_list, f, indent = 4)
     tweet_list = MyTwitter.get_tweet_list(twitter, target, 200)
     top_tweet = get_top_tweet(tweet_list)
     friendship = MyTwitter.get_friendship(twitter, [target])[0]["connections"]

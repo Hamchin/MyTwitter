@@ -1,6 +1,6 @@
 import MyTwitter, sys, json
 
-def execute(name, list_name):
+def execute(name, list_name, exception_list_name = ''):
     twitter, user_id = MyTwitter.login(name)
     tweets = MyTwitter.get_tweet_list(twitter, user_id, 200)
     id_list = [tweet["id_str"] for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], 2)]
@@ -14,16 +14,20 @@ def execute(name, list_name):
     user_list = list(set([user for k, v in favored.items() for user in v if user in friend_list]))
     list_id = MyTwitter.get_list_id(list_name)
     member_list = [user["id_str"] for user in MyTwitter.get_list_member(twitter, list_id)]
-    for user_id in [user_id for user_id in member_list if user_id not in user_list]:
+    exception_list_id = MyTwitter.get_list_id(exception_list_name) if exception_list_name else None
+    exception_list = [user["id_str"] for user in MyTwitter.get_list_member(twitter, exception_list_id)] if exception_list_id else []
+    for user_id in [user_id for user_id in member_list if user_id not in user_list or user_id in exception_list]:
         MyTwitter.delete_user(twitter, list_id, user_id)
-    for user_id in [user_id for user_id in user_list if user_id not in member_list]:
+    for user_id in [user_id for user_id in user_list if user_id not in member_list and user_id not in exception_list]:
         MyTwitter.add_user(twitter, list_id, user_id)
     with open('data/favored.json', 'w') as f:
         json.dump(favored, f, indent = 4)
 
 if __name__ == '__main__':
-    try:
+    if len(sys.argv) == 4:
+        execute(sys.argv[1], sys.argv[2], sys.argv[3])
+    elif len(sys.argv) == 3:
         execute(sys.argv[1], sys.argv[2])
-    except:
-        print("Usage: python3 {0} [user_type] [list_name]".format(sys.argv[0]))
+    else:
+        print("Usage: python3 {0} [user_type] [list_name] (exception_list_name)".format(sys.argv[0]))
         sys.exit()

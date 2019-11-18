@@ -1,7 +1,7 @@
 import MyTwitter, sys, json
 
-def execute(name, list_name, exception_list_name = ''):
-    twitter, user_id = MyTwitter.login(name)
+def execute(list_name, exception_list_name = ''):
+    twitter, user_id = MyTwitter.login()
     tweets = MyTwitter.get_tweet_list(twitter, user_id, 200)
     id_list = [tweet["id_str"] for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], 2)]
     friend_list = MyTwitter.get_following_id(twitter, user_id)
@@ -24,10 +24,10 @@ def execute(name, list_name, exception_list_name = ''):
         json.dump(favored, f, indent = 4)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 4:
-        execute(sys.argv[1], sys.argv[2], sys.argv[3])
-    elif len(sys.argv) == 3:
+    if len(sys.argv) == 3:
         execute(sys.argv[1], sys.argv[2])
+    elif len(sys.argv) == 2:
+        execute(sys.argv[1])
     else:
-        print("Usage: python3 {0} [user_type] [list_name] (exception_list_name)".format(sys.argv[0]))
+        print("Usage: python3 {0} [list_name] (exception_list_name)".format(sys.argv[0]))
         sys.exit()

@@ -2,8 +2,8 @@ import MyTwitter, time, json, sys, datetime
 
 class FavoriteChecker():
 
-    def __init__(self, user_name, list_name = None):
-        self.twitter, self.user_id = MyTwitter.login(user_name)
+    def __init__(self, list_name = None):
+        self.twitter, self.user_id = MyTwitter.login()
         self.list_id = MyTwitter.get_list_id(list_name) if list_name else ""
         self.friend_list = MyTwitter.get_list_member(self.twitter, self.list_id)
         self.friend_list = [friend["id_str"] for friend in self.friend_list] + [self.user_id]
@@ -68,12 +68,12 @@ class FavoriteChecker():
                     time.sleep(60)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 3:
-        FavoriteChecker = FavoriteChecker(sys.argv[1], sys.argv[2])
-    elif len(sys.argv) == 2:
+    if len(sys.argv) == 2:
         FavoriteChecker = FavoriteChecker(sys.argv[1])
+    elif len(sys.argv) == 1:
+        FavoriteChecker = FavoriteChecker()
     else:
-        print("Usage: python3 {0} [user_type] (exception_list_name)".format(sys.argv[0]))
+        print("Usage: python3 {0} (exception_list_name)".format(sys.argv[0]))
         sys.exit()
     FavoriteChecker.setup()
     input("\n")

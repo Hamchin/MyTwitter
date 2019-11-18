@@ -3,18 +3,18 @@ import urllib.request, datetime
 import json, math, time, sys, os, re
 
 # ログイン
-def login(name):
+def login():
     with open('data/account.json', 'r') as f:
         account = json.load(f)
-    CK = account[name]['CK']
-    CS = account[name]['CS']
-    AT = account[name]['AT']
-    AS = account[name]['AS']
-    user_id = account[name]['id']
+    CK = account['CK']
+    CS = account['CS']
+    AT = account['AT']
+    AS = account['AS']
+    user_id = account['id']
     twitter = OAuth1Session(CK, CS, AT, AS)
     return twitter, user_id
 
-# ID取得
+# リストID取得
 def get_list_id(name):
     with open('data/lists.json', 'r') as f:
         lists = json.load(f)
@@ -24,6 +24,26 @@ def get_list_id(name):
 # フォロー中のユーザーリスト取得
 def get_following(twitter, user_id):
     url = "https://api.twitter.com/1.1/friends/list.json"
+    user_list = []
+    params = {
+            "user_id": user_id,
+            "count": 200
+            }
+    while True:
+        res = twitter.get(url, params = params)
+        if res.status_code == 200:
+            for user in json.loads(res.text)["users"]:
+                user_list.append(user)
+            params["cursor"] = json.loads(res.text)["next_cursor_str"]
+        else:
+            break
+        if params["cursor"] == "0":
+            break
+    return user_list
+
+# フォロワーのユーザーリスト取得
+def get_follower(twitter, user_id):
+    url = "https://api.twitter.com/1.1/followers/list.json"
     user_list = []
     params = {
             "user_id": user_id,

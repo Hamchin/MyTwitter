@@ -1,6 +1,6 @@
 import MyTwitter, sys, json
 
-#ワードチェック
+# ワードチェック
 def include(text):
     word_list = {
         "定期", "募集", "いいね", "ふぁぼ", "スマホRPG",
@@ -8,7 +8,7 @@ def include(text):
     }
     return True in [word in text for word in word_list]
 
-#フォローユーザー取得
+# フォローユーザー取得
 def get_following_id(twitter, user_id, list_id):
     user_list = MyTwitter.get_following_id(twitter, user_id)
     friend_list = MyTwitter.get_list_member(twitter, list_id)
@@ -16,7 +16,7 @@ def get_following_id(twitter, user_id, list_id):
     user_list = [user for user in user_list if user not in friend_list]
     return list(reversed(user_list))
 
-#トップツイート取得
+# トップツイート取得
 def get_top_tweet(tweet_list):
     good_tweet_list = []
     for tweet in tweet_list:
@@ -31,14 +31,14 @@ def get_top_tweet(tweet_list):
     else:
         return max(good_tweet_list, key = lambda tweet: tweet["favorite_count"])
 
-def execute(name, list_name = None):
-    twitter, user_id = MyTwitter.login(name)
+def execute(list_name = None):
+    twitter, user_id = MyTwitter.login()
     with open('data/favorite.json', 'r') as f:
         user_list = json.load(f)
-    if user_list[name] == []:
+    if user_list == []:
         list_id = MyTwitter.get_list_id(list_name) if list_name else ""
-        user_list[name] = get_following_id(twitter, user_id, list_id)
-    target = user_list[name].pop(0)
+        user_list = get_following_id(twitter, user_id, list_id)
+    target = user_list.pop(0)
     with open('data/favorite.json', 'w') as f:
         json.dump(user_list, f, indent = 4)
     tweet_list = MyTwitter.get_tweet_list(twitter, target, 200)
@@ -48,10 +48,10 @@ def execute(name, list_name = None):
         MyTwitter.post_favorite(twitter, top_tweet["id_str"])
 
 if __name__ == '__main__':
-    if len(sys.argv) == 3:
-        execute(sys.argv[1], sys.argv[2])
-    elif len(sys.argv) == 2:
+    if len(sys.argv) == 2:
         execute(sys.argv[1])
+    elif len(sys.argv) == 1:
+        execute()
     else:
-        print("Usage: python3 {0} [user_type] (exception_list_name)".format(sys.argv[0]))
+        print("Usage: python3 {0} (exception_list_name)".format(sys.argv[0]))
         sys.exit()

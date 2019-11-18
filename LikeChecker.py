@@ -53,19 +53,15 @@ class FavoriteChecker():
                 print("https://twitter.com/" + friend["screen_name"] + "\n")
 
     def show_protected_user(self):
+        user_ids = [user["id_str"] for user in self.users]
         for i, friend in enumerate(self.follows):
-            while friend["id_str"] not in [user["id_str"] for user in self.users] and friend["protected"] == True:
-                try:
-                    response = self.check_favorite(friend, self.user_id)
-                    if response is not None:
-                        message = friend["name"] + "\n"
-                        message += "https://twitter.com/{0}\n\n".format(friend["screen_name"])
-                        message += response
-                        print(message + "\n")
-                        print("=" * 50 + "\n")
-                    break
-                except:
-                    time.sleep(60)
+            if friend["id_str"] not in user_ids and friend["protected"] == True:
+                message = friend["name"] + "\n"
+                message += "https://twitter.com/{0}".format(friend["screen_name"])
+                print(message + "\n")
+                response = self.check_favorite(friend, self.user_id)
+                if response is not None: print(response + "\n")
+                print("=" * 50 + "\n")
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:

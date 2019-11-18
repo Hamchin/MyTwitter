@@ -193,10 +193,9 @@ def get_like_tweets(twitter, user_id, count, target = "", loop = False, day = 0)
             }
     while proceed < count:
         res = twitter.get(url, params = params)
-        proceed += 200
         if res.status_code == 200:
-            tweets = json.loads(res.text)
-            for tweet in tweets:
+            proceed += 200
+            for tweet in json.loads(res.text):
                 tweets.append(tweet)
                 if tweet["user"]["id_str"] == target:
                     return tweets
@@ -208,7 +207,6 @@ def get_like_tweets(twitter, user_id, count, target = "", loop = False, day = 0)
                 return tweets
         elif loop:
             time.sleep(60)
-            proceed -= 200
     return tweets
 
 # お気に入り登録したユーザーIDリスト取得

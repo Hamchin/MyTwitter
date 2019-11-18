@@ -3,7 +3,7 @@ import MyTwitter, sys, json
 # リレーションシップチェック
 def check_friendship(twitter, target, source):
     try:
-        target = MyTwitter.get_user_list(twitter, [target[0]])[0]
+        target = MyTwitter.get_user(twitter, target[0])
         relation = MyTwitter.check_friendship(twitter, target["id_str"], source)
         message = target["name"] + "\n"
         message += "@" + target["screen_name"] + "\n"
@@ -32,18 +32,18 @@ def check_friendship(twitter, target, source):
 def execute():
     twitter, user_id = MyTwitter.login()
     with open('data/follower.json', 'r') as f:
-        friend_list = json.load(f)
-    follower_list = MyTwitter.get_follower(twitter, user_id)
-    if follower_list == []:
+        friends = json.load(f)
+    followers = MyTwitter.get_followers(twitter, user_id)
+    if followers == []:
         print("Load Failed.")
         sys.exit()
-    follower_ids = [user["id_str"] for user in follower_list]
-    for target in friend_list:
+    follower_ids = [user["id_str"] for user in followers]
+    for target in friends:
         if target[0] not in follower_ids:
             check_friendship(twitter, target, user_id)
-    follower_list = [[user["id_str"], user["screen_name"], user["name"]] for user in follower_list]
+    followers = [[user["id_str"], user["screen_name"], user["name"]] for user in followers]
     with open('data/follower.json', 'w') as f:
-        json.dump(follower_list, f, indent = 4)
+        json.dump(followers, f, indent = 4)
 
 if __name__ == '__main__':
     execute()

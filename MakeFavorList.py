@@ -2,23 +2,23 @@ import MyTwitter, sys, json
 
 def execute(list_name, exception_list_name = ''):
     twitter, user_id = MyTwitter.login()
-    tweets = MyTwitter.get_tweet_list(twitter, user_id, 200)
-    id_list = [tweet["id_str"] for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], 2)]
-    friend_list = MyTwitter.get_following_id(twitter, user_id)
+    tweets = MyTwitter.get_tweets(twitter, user_id, 200)
+    ids = [tweet["id_str"] for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], 2)]
+    friends = MyTwitter.get_friend_ids(twitter, user_id)
     with open('data/favored.json', 'r') as f:
         favored = json.load(f)
-    for tweet_id in id_list:
-        fav_list = MyTwitter.get_fav_user_id_list(tweet_id, [user_id])
-        favored[tweet_id] = list(set(favored.get(tweet_id, []) + fav_list))
-    favored = {k: v for k, v in favored.items() if k in id_list}
-    user_list = list(set([user for k, v in favored.items() for user in v if user in friend_list]))
+    for tweet_id in ids:
+        favs = MyTwitter.get_like_user_ids(tweet_id, [user_id])
+        favored[tweet_id] = list(set(favored.get(tweet_id, []) + favs))
+    favored = {k: v for k, v in favored.items() if k in ids}
+    users = list(set([user for k, v in favored.items() for user in v if user in friends]))
     list_id = MyTwitter.get_list_id(list_name)
-    member_list = [user["id_str"] for user in MyTwitter.get_list_member(twitter, list_id)]
+    members = [user["id_str"] for user in MyTwitter.get_list_members(twitter, list_id)]
     exception_list_id = MyTwitter.get_list_id(exception_list_name) if exception_list_name else None
-    exception_list = [user["id_str"] for user in MyTwitter.get_list_member(twitter, exception_list_id)] if exception_list_id else []
-    for user_id in [user_id for user_id in member_list if user_id not in user_list or user_id in exception_list]:
+    exception_members = [user["id_str"] for user in MyTwitter.get_list_members(twitter, exception_list_id)] if exception_list_id else []
+    for user_id in [user_id for user_id in members if user_id not in users or user_id in exception_members]:
         MyTwitter.delete_user(twitter, list_id, user_id)
-    for user_id in [user_id for user_id in user_list if user_id not in member_list and user_id not in exception_list]:
+    for user_id in [user_id for user_id in users if user_id not in members and user_id not in exception_members]:
         MyTwitter.add_user(twitter, list_id, user_id)
     with open('data/favored.json', 'w') as f:
         json.dump(favored, f, indent = 4)

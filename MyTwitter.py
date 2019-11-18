@@ -22,9 +22,9 @@ def get_list_id(name):
     return list_id
 
 # フォロー中のユーザーリスト取得
-def get_following(twitter, user_id):
+def get_friends(twitter, user_id):
     url = "https://api.twitter.com/1.1/friends/list.json"
-    user_list = []
+    users = []
     params = {
             "user_id": user_id,
             "count": 200
@@ -33,18 +33,18 @@ def get_following(twitter, user_id):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
             for user in json.loads(res.text)["users"]:
-                user_list.append(user)
+                users.append(user)
             params["cursor"] = json.loads(res.text)["next_cursor_str"]
         else:
             break
         if params["cursor"] == "0":
             break
-    return user_list
+    return users
 
 # フォロワーのユーザーリスト取得
-def get_follower(twitter, user_id):
+def get_followers(twitter, user_id):
     url = "https://api.twitter.com/1.1/followers/list.json"
-    user_list = []
+    users = []
     params = {
             "user_id": user_id,
             "count": 200
@@ -53,16 +53,16 @@ def get_follower(twitter, user_id):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
             for user in json.loads(res.text)["users"]:
-                user_list.append(user)
+                users.append(user)
             params["cursor"] = json.loads(res.text)["next_cursor_str"]
         else:
             break
         if params["cursor"] == "0":
             break
-    return user_list
+    return users
 
 # フォロー中のユーザーIDリスト取得
-def get_following_id(twitter, user_id):
+def get_friend_ids(twitter, user_id):
     url = "https://api.twitter.com/1.1/friends/ids.json"
     params = {
             "user_id": user_id,
@@ -76,7 +76,7 @@ def get_following_id(twitter, user_id):
         return []
 
 # フォロワーのユーザーIDリスト取得
-def get_follower_id(twitter, user_id):
+def get_follower_ids(twitter, user_id):
     url = "https://api.twitter.com/1.1/followers/ids.json"
     params = {
             "user_id": user_id,
@@ -90,7 +90,7 @@ def get_follower_id(twitter, user_id):
         return []
 
 # リストのメンバーリスト取得
-def get_list_member(twitter, list_id):
+def get_list_members(twitter, list_id):
     url = "https://api.twitter.com/1.1/lists/members.json"
     params = {
             "list_id": list_id,
@@ -104,24 +104,38 @@ def get_list_member(twitter, list_id):
     else:
         return []
 
+# IDまたはスクリーンネームからユーザー取得
+def get_user(twitter, user_id = '', screen_name = ''):
+    url = "https://api.twitter.com/1.1/users/show.json"
+    key = "user_id" if user_id else "screen_name"
+    value = user_id if user_id else screen_name
+    params = {
+            key: value,
+            "include_entities": False
+            }
+    res = twitter.get(url, params = params, timeout = 10)
+    if res.status_code == 200:
+        return json.loads(res.text)
+    return None
+
 # IDリストからユーザーリスト取得
-def get_user_list(twitter, id_list):
+def get_users(twitter, ids):
     url = "https://api.twitter.com/1.1/users/lookup.json"
-    user_list = []
-    for i in range(math.ceil(len(id_list)/100)):
+    users = []
+    for i in range(math.ceil(len(ids)/100)):
         params = {
-                "user_id": ",".join(id_list[i*100:(i+1)*100]),
+                "user_id": ",".join(ids[i*100:(i+1)*100]),
                 "include_entities": False
                 }
         res = twitter.get(url, params = params, timeout = 10)
         if res.status_code == 200:
-            user_list.extend(json.loads(res.text))
-    return user_list
+            users.extend(json.loads(res.text))
+    return users
 
 # ユーザーのツイートリスト取得
-def get_tweet_list(twitter, user_id, count):
+def get_tweets(twitter, user_id, count):
     url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
-    tweet_list = []
+    tweets = []
     params = {
             "user_id": user_id,
             "exclude_replies": True,
@@ -131,14 +145,14 @@ def get_tweet_list(twitter, user_id, count):
     for i in range(count//200):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
-            tweet_list.extend(json.loads(res.text))
-            params["max_id"] = tweet_list[-1]["id_str"]
-    return tweet_list
+            tweets.extend(json.loads(res.text))
+            params["max_id"] = tweets[-1]["id_str"]
+    return tweets
 
 # ホームのタイムライン取得
 def get_timeline(twitter, count):
     url = "https://api.twitter.com/1.1/statuses/home_timeline.json"
-    tweet_list = []
+    tweets = []
     params = {
             "exclude_replies": True,
             "include_rts": True,
@@ -147,14 +161,14 @@ def get_timeline(twitter, count):
     for i in range(count//200):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
-            tweet_list.extend(json.loads(res.text))
-            params["max_id"] = tweet_list[-1]["id_str"]
-    return tweet_list
+            tweets.extend(json.loads(res.text))
+            params["max_id"] = tweets[-1]["id_str"]
+    return tweets
 
 # リストのタイムライン取得
 def get_list_timeline(twitter, list_id, count):
     url = "https://api.twitter.com/1.1/lists/statuses.json"
-    tweet_list = []
+    tweets = []
     params = {
             "list_id": list_id,
             "exclude_replies": True,
@@ -164,14 +178,14 @@ def get_list_timeline(twitter, list_id, count):
     for i in range(count//200):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
-            tweet_list.extend(json.loads(res.text))
-            params["max_id"] = tweet_list[-1]["id_str"]
-    return tweet_list
+            tweets.extend(json.loads(res.text))
+            params["max_id"] = tweets[-1]["id_str"]
+    return tweets
 
 # お気に入り登録したツイートリスト取得
-def get_fav_tweet_list(twitter, user_id, count, target = "", loop = False, day = 0):
+def get_like_tweets(twitter, user_id, count, target = "", loop = False, day = 0):
     url = "https://api.twitter.com/1.1/favorites/list.json"
-    tweet_list, proceed = [], 0
+    tweets, proceed = [], 0
     params = {
             "user_id": user_id,
             "count": 200,
@@ -183,51 +197,51 @@ def get_fav_tweet_list(twitter, user_id, count, target = "", loop = False, day =
         if res.status_code == 200:
             tweets = json.loads(res.text)
             for tweet in tweets:
-                tweet_list.append(tweet)
+                tweets.append(tweet)
                 if tweet["user"]["id_str"] == target:
-                    return tweet_list
+                    return tweets
             try:
                 params["max_id"] = tweets[-1]["id_str"]
             except:
-                return tweet_list
+                return tweets
             if day and is_timeover(tweets[-1]["created_at"], day):
-                return tweet_list
+                return tweets
         elif loop:
             time.sleep(60)
             proceed -= 200
-    return tweet_list
+    return tweets
 
 # お気に入り登録したユーザーIDリスト取得
-def get_fav_user_id_list(tweet_id, exclude_list = []):
+def get_like_user_ids(tweet_id, excludes = []):
     try:
         url = "https://twitter.com/i/activity/favorited_popup?id=" + tweet_id
         json_data = urllib.request.urlopen(url).read()
-        found_id_list = re.findall(r'data-user-id=\\"+\d+', json_data.decode('utf-8'))
-        unique_id_list = list(set([re.findall(r'\d+', match)[0] for match in found_id_list]))
-        user_id_list = [user_id for user_id in unique_id_list if user_id not in exclude_list]
-        return user_id_list
+        found_ids = re.findall(r'data-user-id=\\"+\d+', json_data.decode('utf-8'))
+        unique_ids = list(set([re.findall(r'\d+', match)[0] for match in found_ids]))
+        user_ids = [user_id for user_id in unique_ids if user_id not in excludes]
+        return user_ids
     except:
         return []
 
 # ユーザーリストとの関係取得
-def get_friendship(twitter, user_id_list):
+def get_friendship(twitter, user_ids):
     url = "https://api.twitter.com/1.1/friendships/lookup.json"
-    user_list = []
-    line_list = []
-    for i, user in enumerate(user_id_list):
+    users = []
+    lines = []
+    for i, user in enumerate(user_ids):
         if i%100 == 0:
-            line_list.append(user + ",")
+            lines.append(user + ",")
         else:
-            line_list[i//100] += user + ","
-    for line in line_list:
+            lines[i//100] += user + ","
+    for line in lines:
         line = line[:-1]
         params = { "user_id": line }
         res = twitter.get(url, params = params)
         if res.status_code == 200:
-            user_list.extend(json.loads(res.text))
+            users.extend(json.loads(res.text))
         else:
             sys.exit()
-    return user_list
+    return users
 
 # ユーザーとの関係チェック
 def check_friendship(twitter, target, source):
@@ -259,7 +273,7 @@ def is_timeover(date, day):
     return standard > date
 
 # お気に入りチェック
-def is_favorited(twitter, tweet_id):
+def is_liked(twitter, tweet_id):
     url = "https://api.twitter.com/1.1/statuses/lookup.json"
     params = {
             "id": tweet_id,
@@ -287,13 +301,13 @@ def direct_message(twitter, target, message):
     return res
 
 # お気に入り登録
-def post_favorite(twitter, tweet_id):
+def like(twitter, tweet_id):
     url = "https://api.twitter.com/1.1/favorites/create.json"
     res = twitter.post(url, params = {"id": tweet_id})
     return res
 
 # お気に入り登録解除
-def destroy_favorite(twitter, tweet_id):
+def dislike(twitter, tweet_id):
     url = "https://api.twitter.com/1.1/favorites/destroy.json"
     res = twitter.post(url, params = {"id": tweet_id})
     return res

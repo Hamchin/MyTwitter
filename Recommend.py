@@ -4,7 +4,8 @@ def get_friends():
     twitter, user_id = MyTwitter.login()
     with open('data/follower.json', 'r') as f:
         friends = json.load(f)
-    friends = MyTwitter.get_user_list(twitter, friends)
+    friends = [user[0] for user in friends]
+    friends = MyTwitter.get_users(twitter, friends)
     return friends
 
 def get_fav_data(tweets, day):
@@ -20,14 +21,14 @@ def preprocess(twitter, users, count = 0):
     print("Number of User")
     print(f"Before:\t{len(users)}")
     users = [user for user in users if user['followers_count'] < user['friends_count'] < 800]
-    relations = MyTwitter.get_friendship(twitter, user_id_list = [user['id_str'] for user in users])
+    relations = MyTwitter.get_friendship(twitter, user_ids = [user['id_str'] for user in users])
     users = [user for user, relation in zip(users, relations) if 'following' not in relation['connections']]
     print(f"After:\t{len(users)}\n")
     users = random.sample(users, count) if count else users
     for i, user in enumerate(users):
         if user['protected']: continue
         print(f"{i+1} / {len(users)}")
-        tweets = MyTwitter.get_fav_tweet_list(twitter, user['id_str'], 5000, loop = True, day = 5)
+        tweets = MyTwitter.get_like_tweets(twitter, user['id_str'], 5000, loop = True, day = 5)
         print(f"Tweets: {len(tweets)}", end = '\t')
         tweets = [t for t in tweets if t['retweet_count'] < 20 and t['favorite_count'] < 50 and not t['entities'].get('media')]
         print(f"Preprocess: {len(tweets)}\n")
@@ -48,25 +49,21 @@ def preprocess(twitter, users, count = 0):
         data.append(data_dict)
     return data
 
-def show_friends():
-    friends = get_friends()
-    for friend in friends:
-        print(f"{friend['name']}\n{friend['id_str']}\n")
-
-def get_data_from_target(user_id):
+def get_data_from_target(screen_name):
     twitter, _ = MyTwitter.login()
-    users = MyTwitter.get_following(twitter, user_id)
+    user = MyTwitter.get_user(twitter, screen_name = screen_name)
+    users = MyTwitter.get_friends(twitter, user['id_str'])
     data = preprocess(twitter, users)
     return data
 
 def get_data_from_tag():
     twitter, user_id = MyTwitter.login()
-    tag_list = [
+    tags = [
         "#ハムスター",
         "#ハムスターのいる生活",
         "#ハムスター好きと繋がりたい"
     ]
-    keyword = " OR ".join(tag_list)
+    keyword = " OR ".join(tags)
     url = "https://api.twitter.com/1.1/search/tweets.json"
     params = {
         'q': keyword,
@@ -74,16 +71,16 @@ def get_data_from_tag():
         'result_type': 'recent',
         'count': 100
     }
-    tweet_list, users = [], []
+    tweets, users = [], []
     for i in range(50):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
             timeline = json.loads(res.text)
-            tweet_list.extend(timeline['statuses'])
+            tweets.extend(timeline['statuses'])
         else:
             break
-    user_list = [tweet['user'] for tweet in tweet_list if tweet['entities']['user_mentions'] == [] and tweet['entities']['urls'] == [] and tweet['entities'].get('media')]
-    for user in user_list:
+    users = [tweet['user'] for tweet in tweets if tweet['entities']['user_mentions'] == [] and tweet['entities']['urls'] == [] and tweet['entities'].get('media')]
+    for user in users:
         if user not in users:
             users.append(user)
     data = preprocess(twitter, users)
@@ -100,22 +97,17 @@ def show_data(data):
 
 if __name__ == '__main__':
     while True:
-        print("1: show_friends()")
-        print("2: get_data_from_target(user_id)")
-        print("3: get_data_from_tag()")
+        print("1: get_data_from_target(screen_name)")
+        print("2: get_data_from_tag()")
         mode = int(input("\n>> "))
         if mode == 1:
+            screen_name = input("\nscreen_name: ")
             print('\n', '=' * 50, '\n', sep = '')
-            show_friends()
-            print('=' * 50, '\n', sep = '')
-        elif mode == 2:
-            user_id = input("\nuser_id: ")
-            print('\n', '=' * 50, '\n', sep = '')
-            data = get_data_from_target(user_id)
+            data = get_data_from_target(screen_name)
             print('=' * 50, '\n', sep = '')
             show_data(data)
             print('=' * 50, '\n', sep = '')
-        elif mode == 3:
+        elif mode == 2:
             print('\n', '=' * 50, '\n', sep = '')
             data = get_data_from_tag()
             print('=' * 50, '\n', sep = '')

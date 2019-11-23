@@ -3,10 +3,10 @@ import MyTwitter, sys, json
 # リレーションシップチェック
 def check_friendship(twitter, target, source):
     try:
-        target = MyTwitter.get_user(twitter, target[0])
-        relation = MyTwitter.check_friendship(twitter, target["id_str"], source)
-        message = target["name"] + "\n"
-        message += "@" + target["screen_name"] + "\n"
+        user = MyTwitter.get_user(twitter, target[0])
+        relation = MyTwitter.check_friendship(twitter, user["id_str"], source)
+        message = user["name"] + "\n"
+        message += "@" + user["screen_name"] + "\n"
         # ブロックされている場合
         if relation["source"]["blocked_by"] == True:
             message += "ブロックされました"

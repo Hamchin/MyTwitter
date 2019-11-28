@@ -37,7 +37,7 @@ def execute(list_name, exception_list_name = ''):
             protected_data[i][1] = True
             break
     if target is None:
-        followers = MyTwitter.get_followers(twitter, user_id)
+        followers = MyTwitter.get_followers(twitter, myself)
         protected_users = [user['id_str'] for user in followers if user['protected']]
         protected_data = [[user_id, False] for user_id in protected_users]
         if protected_data:

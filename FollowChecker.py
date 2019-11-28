@@ -10,24 +10,22 @@ def check_friendship(twitter, target, source):
         # ブロックされている場合
         if relation["source"]["blocked_by"] == True:
             message += "ブロックされました"
-            MyTwitter.direct_message(twitter, source, message)
         # ブロブロ解除された場合
         elif relation["source"]["following"] == False:
             message += "ブロブロ解除された可能性あり"
-            MyTwitter.direct_message(twitter, source, message)
         # フォロー解除された場合
         elif relation["source"]["followed_by"] == False:
             message += "フォロー解除されました"
-            MyTwitter.direct_message(twitter, source, message)
         # 原因不明の場合
         else:
             message += "失踪しました"
-            MyTwitter.direct_message(twitter, source, message)
     except:
         message = target[2] + "\n"
         message += "@" + target[1] + "\n"
         message += "失踪しました"
-        MyTwitter.direct_message(twitter, source, message)
+    finally:
+        res = MyTwitter.direct_message(twitter, source, message)
+        if res.status_code != 200: sys.exit()
 
 def execute():
     twitter, user_id = MyTwitter.login()

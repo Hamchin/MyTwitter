@@ -33,13 +33,13 @@ def get_top_tweet(tweets):
 
 def execute(list_name = None):
     twitter, user_id = MyTwitter.login()
-    with open('data/favorite.json', 'r') as f:
+    with open('data/like.json', 'r') as f:
         users = json.load(f)
     if users == []:
         list_id = MyTwitter.get_list_id(list_name) if list_name else ""
         users = get_friend_ids(twitter, user_id, list_id)
     target = users.pop(0)
-    with open('data/favorite.json', 'w') as f:
+    with open('data/like.json', 'w') as f:
         json.dump(users, f, indent = 4)
     tweets = MyTwitter.get_tweets(twitter, target, 200)
     top_tweet = get_top_tweet(tweets)

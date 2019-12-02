@@ -6,7 +6,7 @@ def execute(list_name):
     with open('data/protected.json', 'r') as f:
         protected_data = json.load(f)
         protected_users = [data[0] for data in protected_data]
-    target = None
+    target, mytweet = None, None
     for i, (user_id, checked) in enumerate(protected_data):
         if not checked:
             target = user_id
@@ -21,18 +21,19 @@ def execute(list_name):
             protected_data[0][1] = True
     if target:
         url = "https://api.twitter.com/1.1/favorites/list.json"
-        tweets = []
         params = {'user_id': myself, 'count': 200, 'exclude_replies': True}
         for _ in range(5):
             res = twitter.get(url, params = params)
-            if res.status_code == 200: tweets.extend([tweet for tweet in json.loads(res.text)])
+            if res.status_code == 200: tweets = json.loads(res.text)
             else: sys.exit()
-            tweets = [tweet for tweet in tweets if myself == tweet['user']['id_str']]
-            if tweets: break
+            for tweet in tweets:
+                if myself == tweet['user']['id_str']:
+                    mytweet = tweet
+                    break
+            if mytweet or tweets == []: break
             else: params['max_id'] = tweets[-1]['id_str']
-        if tweets:
-            tweet = tweets[-1]
-            if not MyTwitter.is_timeover(tweet['created_at'], 2):
+        if mytweet:
+            if not MyTwitter.is_timeover(mytweet['created_at'], 2):
                 MyTwitter.add_user(twitter, list_id, target)
             else:
                 MyTwitter.delete_user(twitter, list_id, target)

@@ -1,6 +1,19 @@
 import MyTwitter, sys, json
 
-def execute(list_name):
+def accept_user(twitter, user, trim_list_name):
+    if user is None: return False
+    if trim_list_name == '': return True
+    trim_list_id = MyTwitter.get_list_id(trim_list_name)
+    trim_members = [user['id_str'] for user in MyTwitter.get_list_members(twitter, trim_list_id)]
+    if user in trim_members: return False
+    return True
+
+def accept_tweet(tweet):
+    if tweet is None: return False
+    if MyTwitter.is_timeover(tweet['created_at'], 2): return False
+    return True
+
+def execute(list_name, trim_list_name = ''):
     twitter, myself = MyTwitter.login()
     list_id = MyTwitter.get_list_id(list_name)
     with open('data/protected.json', 'r') as f:
@@ -19,7 +32,7 @@ def execute(list_name):
         if protected_data:
             target = protected_data[0][0]
             protected_data[0][1] = True
-    if target:
+    if accept_user(twitter, target, trim_list_name):
         url = "https://api.twitter.com/1.1/favorites/list.json"
         params = {'user_id': myself, 'count': 200, 'exclude_replies': True}
         for _ in range(5):
@@ -32,19 +45,16 @@ def execute(list_name):
                     break
             if mytweet or tweets == []: break
             else: params['max_id'] = tweets[-1]['id_str']
-        if mytweet:
-            if not MyTwitter.is_timeover(mytweet['created_at'], 2):
-                MyTwitter.add_user(twitter, list_id, target)
-            else:
-                MyTwitter.delete_user(twitter, list_id, target)
-        else:
-            MyTwitter.delete_user(twitter, list_id, target)
+        if accept_tweet(mytweet): MyTwitter.add_user(twitter, list_id, target)
+        else: MyTwitter.delete_user(twitter, list_id, target)
     with open('data/protected.json', 'w') as f:
         json.dump(protected_data, f, indent = 4)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 3:
+        execute(sys.argv[1], sys.argv[2])
+    elif len(sys.argv) == 2:
         execute(sys.argv[1])
     else:
-        print("Usage: python3 {0} [list_name]".format(sys.argv[0]))
+        print("Usage: python3 {0} [list_name] (trim_list_name)".format(sys.argv[0]))
         sys.exit()

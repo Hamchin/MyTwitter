@@ -37,7 +37,7 @@ class FavoriteChecker():
         self.users = [user for user in self.users if user["id_str"] in follows]
 
     def show_fav_user(self):
-        users = MyTwitter.get_users(self.twitter, [user["id_str"] for user in self.users])
+        users = MyTwitter.get_users_by_ids(self.twitter, [user["id_str"] for user in self.users])
         for i, user in enumerate(self.users):
             message = "{0}: {1}\n".format(i+1, users[i]["name"])
             message += "https://twitter.com/{0}\n\n".format(users[i]["screen_name"])

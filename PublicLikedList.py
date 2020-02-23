@@ -14,6 +14,7 @@ def execute(list_name, trim_list_name = ''):
         liked = json.load(f)
     for tweet_id in ids:
         likes = MyTwitter.get_like_user_ids(tweet_id, [myself])
+        if likes == []: return
         liked[tweet_id] = list(set(liked.get(tweet_id, []) + likes))
     liked = {tweet_id: data for tweet_id, data in liked.items() if tweet_id in ids}
     users = list(set([user for tweet_id, data in liked.items() for user in data if user in followers]))

@@ -63,6 +63,8 @@ def execute(list_name, trim_list_name = ''):
     deleted_ids = delete_timeover_notices(notices, day = 7)
     notices = [notice for notice in notices if notice['id'] not in deleted_ids]
     notices = [notice for notice in notices if notice['receive_user'] == self_user['screen_name']]
+    # 指定日数以内の通知のみ保持
+    notices = [notice for notice in notices if not MyTwitter.is_timeover(notice['datetime'], 1)]
     member_names = [user['screen_name'] for user in get_list_members(twitter, list_name)]
     trim_names = [user['screen_name'] for user in get_list_members(twitter, trim_list_name)]
     notice_senders = [sender[0] for sender in get_notice_senders(notices)]

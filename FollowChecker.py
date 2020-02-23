@@ -33,7 +33,6 @@ def execute():
         friends = json.load(f)
     followers = MyTwitter.get_followers(twitter, user_id)
     if followers == []:
-        print("Load Failed.")
         sys.exit()
     follower_ids = [user["id_str"] for user in followers]
     for target in friends:

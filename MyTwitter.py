@@ -118,27 +118,15 @@ def get_user(twitter, user_id = '', screen_name = ''):
         return json.loads(res.text)
     return None
 
-# IDリストからユーザーリスト取得
-def get_users_by_ids(twitter, ids):
+# IDリストまたはスクリーンネームリストからユーザーリスト取得
+def get_users(twitter, user_ids = [], screen_names = []):
     url = "https://api.twitter.com/1.1/users/lookup.json"
+    key = "user_id" if user_ids else "screen_name"
+    values = user_ids if user_ids else screen_names
     users = []
-    for i in range(math.ceil(len(ids)/100)):
+    for i in range(math.ceil(len(values)/100)):
         params = {
-            "user_id": ",".join(ids[i*100:(i+1)*100]),
-            "include_entities": False
-        }
-        res = twitter.get(url, params = params, timeout = 10)
-        if res.status_code == 200:
-            users.extend(json.loads(res.text))
-    return users
-
-# スクリーンネームリストからユーザーリスト取得
-def get_users_by_names(twitter, names):
-    url = "https://api.twitter.com/1.1/users/lookup.json"
-    users = []
-    for i in range(math.ceil(len(names)/100)):
-        params = {
-            "screen_name": ",".join(names[i*100:(i+1)*100]),
+            key: ",".join(values[i*100:(i+1)*100]),
             "include_entities": False
         }
         res = twitter.get(url, params = params, timeout = 10)
@@ -271,10 +259,18 @@ def check_friendship(twitter, target, source):
 # 日付取得
 def get_date(date):
     try:
-        date = datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
+        return datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
     except:
-        date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
-    return date
+        pass
+    try:
+        return datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
+    except:
+        pass
+    try:
+        return datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000Z")
+    except:
+        pass
+    return None
 
 # タイムオーバーチェック
 def is_timeover(date, day):
@@ -325,21 +321,25 @@ def dislike(twitter, tweet_id):
     return res
 
 # リストへユーザー追加
-def add_user(twitter, list_id, user_id):
+def add_user(twitter, list_id, user_id = '', screen_name = ''):
+    key = "user_id" if user_id else "screen_name"
+    value = user_id if user_id else screen_name
     url = "https://api.twitter.com/1.1/lists/members/create.json"
     params = {
         "list_id": list_id,
-        "user_id": user_id
+        key: value
     }
     res = twitter.post(url, params = params)
     return res
 
 # リストからユーザー削除
-def delete_user(twitter, list_id, user_id):
+def delete_user(twitter, list_id, user_id = '', screen_name = ''):
+    key = "user_id" if user_id else "screen_name"
+    value = user_id if user_id else screen_name
     url = "https://api.twitter.com/1.1/lists/members/destroy.json"
     params = {
         "list_id": list_id,
-        "user_id": user_id
+        key: value
     }
     res = twitter.post(url, params = params)
     return res

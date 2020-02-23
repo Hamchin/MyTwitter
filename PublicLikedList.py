@@ -1,8 +1,8 @@
 import MyTwitter, sys, json
 
 def execute(list_name, trim_list_name = ''):
-    twitter, myself = MyTwitter.login()
-    tweets = MyTwitter.get_tweets(twitter, myself, 200)
+    twitter, self_id = MyTwitter.login()
+    tweets = MyTwitter.get_tweets(twitter, self_id, 200)
     ids = [tweet["id_str"] for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], 2)]
     with open('data/follower.json', 'r') as f:
         followers = json.load(f)
@@ -13,7 +13,7 @@ def execute(list_name, trim_list_name = ''):
     with open('data/liked.json', 'r') as f:
         liked = json.load(f)
     for tweet_id in ids:
-        likes = MyTwitter.get_like_user_ids(tweet_id, [myself])
+        likes = MyTwitter.get_like_user_ids(tweet_id, [self_id])
         if likes == []: return
         liked[tweet_id] = list(set(liked.get(tweet_id, []) + likes))
     liked = {tweet_id: data for tweet_id, data in liked.items() if tweet_id in ids}
@@ -25,10 +25,10 @@ def execute(list_name, trim_list_name = ''):
     trim_members = [user["id_str"] for user in MyTwitter.get_list_members(twitter, trim_list_id)] if trim_list_id else []
     delete_ids = [user_id for user_id in members if user_id not in users or user_id in trim_members]
     for user_id in delete_ids:
-        MyTwitter.delete_user(twitter, list_id, user_id)
+        MyTwitter.delete_user(twitter, list_id, user_id = user_id)
     add_ids = [user_id for user_id in users if user_id not in members and user_id not in trim_members]
     for user_id in add_ids:
-        MyTwitter.add_user(twitter, list_id, user_id)
+        MyTwitter.add_user(twitter, list_id, user_id = user_id)
     with open('data/liked.json', 'w') as f:
         json.dump(liked, f, indent = 4)
 

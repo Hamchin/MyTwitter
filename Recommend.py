@@ -5,7 +5,7 @@ def get_friends():
     with open('data/follower.json', 'r') as f:
         friends = json.load(f)
     friends = [user[0] for user in friends]
-    friends = MyTwitter.get_users_by_ids(twitter, friends)
+    friends = MyTwitter.get_users(twitter, user_ids = friends)
     return friends
 
 def get_fav_data(tweets, day):

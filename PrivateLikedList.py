@@ -14,7 +14,7 @@ def accept_tweet(tweet):
     return True
 
 def execute(list_name, trim_list_name = ''):
-    twitter, myself = MyTwitter.login()
+    twitter, self_id = MyTwitter.login()
     list_id = MyTwitter.get_list_id(list_name)
     with open('data/protected.json', 'r') as f:
         protected_data = json.load(f)
@@ -26,7 +26,7 @@ def execute(list_name, trim_list_name = ''):
             protected_data[i][1] = True
             break
     if target is None:
-        followers = MyTwitter.get_followers(twitter, myself)
+        followers = MyTwitter.get_followers(twitter, self_id)
         protected_users = [user['id_str'] for user in followers if user['protected']]
         protected_data = [[user_id, False] for user_id in protected_users]
         if protected_data:
@@ -34,19 +34,19 @@ def execute(list_name, trim_list_name = ''):
             protected_data[0][1] = True
     if accept_user(twitter, target, trim_list_name):
         url = "https://api.twitter.com/1.1/favorites/list.json"
-        params = {'user_id': myself, 'count': 200, 'exclude_replies': True}
+        params = {'user_id': self_id, 'count': 200, 'exclude_replies': True}
         for _ in range(5):
             res = twitter.get(url, params = params)
             if res.status_code == 200: tweets = json.loads(res.text)
             else: sys.exit()
             for tweet in tweets:
-                if myself == tweet['user']['id_str']:
+                if self_id == tweet['user']['id_str']:
                     mytweet = tweet
                     break
             if mytweet or tweets == []: break
             else: params['max_id'] = tweets[-1]['id_str']
-        if accept_tweet(mytweet): MyTwitter.add_user(twitter, list_id, target)
-        else: MyTwitter.delete_user(twitter, list_id, target)
+        if accept_tweet(mytweet): MyTwitter.add_user(twitter, list_id, user_id = target)
+        else: MyTwitter.delete_user(twitter, list_id, user_id = target)
     with open('data/protected.json', 'w') as f:
         json.dump(protected_data, f, indent = 4)
 

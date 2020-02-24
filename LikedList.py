@@ -6,20 +6,11 @@ def get_notices():
     notices = json.loads(res.text)
     return notices
 
-# 通知削除
-def delete_notice(ID):
-    url = "https://notice-database.herokuapp.com/notice"
+# 指定日数以前の通知を全て削除
+def delete_notices(day):
+    url = "https://notice-database.herokuapp.com/notices"
     headers = {'content-type': 'application/json'}
-    requests.delete(url, data = json.dumps({'id': ID}), headers = headers)
-
-# 指定日数より過去の通知削除
-def delete_timeover_notices(notices, day = 0):
-    deleted_ids = []
-    for notice in notices:
-        if MyTwitter.is_timeover(notice['datetime'], day):
-            delete_notice(notice['id'])
-            deleted_ids.append(notice['id'])
-    return deleted_ids
+    requests.delete(url, data = json.dumps({'day': day}), headers = headers)
 
 # リストネームからリストメンバー取得
 def get_list_members(twitter, list_name):
@@ -59,9 +50,8 @@ def delete_users(twitter, list_name, target_names, member_names, trim_names):
 def execute(list_name, trim_list_name = ''):
     twitter, self_id = MyTwitter.login()
     self_user = MyTwitter.get_user(twitter, user_id = self_id)
+    delete_notices(day = 7)
     notices = get_notices()
-    deleted_ids = delete_timeover_notices(notices, day = 7)
-    notices = [notice for notice in notices if notice['id'] not in deleted_ids]
     notices = [notice for notice in notices if notice['receive_user'] == self_user['screen_name']]
     # 指定日数以内の通知のみ保持
     notices = [notice for notice in notices if not MyTwitter.is_timeover(notice['datetime'], 1)]

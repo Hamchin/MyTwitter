@@ -266,10 +266,6 @@ def get_date(date):
         return datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
     except:
         pass
-    try:
-        return datetime.datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000Z")
-    except:
-        pass
     return None
 
 # タイムオーバーチェック

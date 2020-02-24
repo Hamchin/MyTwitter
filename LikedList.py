@@ -21,8 +21,8 @@ def get_list_members(twitter, list_name):
 
 # 通知の送信ユーザー取得(カウント付き)
 def get_notice_senders(notices):
-    names = [notice['send_user'] for notice in notices]
-    senders = {name: {'count': 0, 'time': 0} for name in list(set(names))}
+    names = list(set([notice['send_user'] for notice in notices]))
+    senders = {name: {'count': 0, 'time': 0} for name in names}
     for notice in notices:
         name = notice['send_user']
         time = MyTwitter.get_date(notice['datetime']).timestamp()
@@ -57,7 +57,7 @@ def execute(list_name, trim_list_name = ''):
     notices = [notice for notice in notices if not MyTwitter.is_timeover(notice['datetime'], 1)]
     member_names = [user['screen_name'] for user in get_list_members(twitter, list_name)]
     trim_names = [user['screen_name'] for user in get_list_members(twitter, trim_list_name)]
-    notice_senders = [sender[0] for sender in get_notice_senders(notices)]
+    notice_senders = list(set([notice['send_user'] for notice in notices]))
     add_users(twitter, list_name, notice_senders, member_names, trim_names)
     delete_users(twitter, list_name, notice_senders, member_names, trim_names)
 

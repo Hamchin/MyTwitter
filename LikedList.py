@@ -2,8 +2,9 @@ import MyTwitter, sys, requests, json
 
 # 通知取得
 def get_notices(size = 10):
+    url = "https://notice-database.herokuapp.com/notices"
     params = {'size': size}
-    res = requests.get("https://notice-database.herokuapp.com/notices", params = params)
+    res = requests.get(url, params = params)
     notices = json.loads(res.text)
     return notices
 

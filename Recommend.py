@@ -59,9 +59,9 @@ def get_data_from_target(screen_name):
 def get_data_from_tag():
     twitter, user_id = MyTwitter.login()
     tags = [
-        "#ハムスター",
-        "#ハムスターのいる生活",
-        "#ハムスター好きと繋がりたい"
+        '#ハムスター',
+        '#ハムスターのいる生活',
+        '#ハムスター好きと繋がりたい'
     ]
     keyword = " OR ".join(tags)
     url = "https://api.twitter.com/1.1/search/tweets.json"
@@ -97,11 +97,11 @@ def show_data(data):
 
 if __name__ == '__main__':
     while True:
-        print("1: get_data_from_target(screen_name)")
-        print("2: get_data_from_tag()")
+        print("1: Get Data based on Target (Screen Name)")
+        print("2: Get Data based on Tag")
         mode = int(input("\n>> "))
         if mode == 1:
-            screen_name = input("\nscreen_name: ")
+            screen_name = input("\nScreen Name: ")
             print('\n', '=' * 50, '\n', sep = '')
             data = get_data_from_target(screen_name)
             print('=' * 50, '\n', sep = '')

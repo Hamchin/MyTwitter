@@ -26,18 +26,18 @@ def get_friends(twitter, user_id):
     url = "https://api.twitter.com/1.1/friends/list.json"
     users = []
     params = {
-        "user_id": user_id,
-        "count": 200
+        'user_id': user_id,
+        'count': 200
     }
     while True:
         res = twitter.get(url, params = params)
         if res.status_code == 200:
-            for user in json.loads(res.text)["users"]:
+            for user in json.loads(res.text)['users']:
                 users.append(user)
-            params["cursor"] = json.loads(res.text)["next_cursor_str"]
+            params['cursor'] = json.loads(res.text)['next_cursor_str']
         else:
             break
-        if params["cursor"] == "0":
+        if params['cursor'] == '0':
             break
     return users
 
@@ -46,18 +46,18 @@ def get_followers(twitter, user_id):
     url = "https://api.twitter.com/1.1/followers/list.json"
     users = []
     params = {
-        "user_id": user_id,
-        "count": 200
+        'user_id': user_id,
+        'count': 200
     }
     while True:
         res = twitter.get(url, params = params)
         if res.status_code == 200:
-            for user in json.loads(res.text)["users"]:
+            for user in json.loads(res.text)['users']:
                 users.append(user)
-            params["cursor"] = json.loads(res.text)["next_cursor_str"]
+            params['cursor'] = json.loads(res.text)['next_cursor_str']
         else:
             break
-        if params["cursor"] == "0":
+        if params['cursor'] == '0':
             break
     return users
 
@@ -65,13 +65,13 @@ def get_followers(twitter, user_id):
 def get_friend_ids(twitter, user_id):
     url = "https://api.twitter.com/1.1/friends/ids.json"
     params = {
-        "user_id": user_id,
-        "stringify_ids": True,
-        "count": 1500
+        'user_id': user_id,
+        'stringify_ids': True,
+        'count': 1500
     }
     res = twitter.get(url, params = params)
     if res.status_code == 200:
-        return json.loads(res.text)["ids"]
+        return json.loads(res.text)['ids']
     else:
         return []
 
@@ -79,13 +79,13 @@ def get_friend_ids(twitter, user_id):
 def get_follower_ids(twitter, user_id):
     url = "https://api.twitter.com/1.1/followers/ids.json"
     params = {
-        "user_id": user_id,
-        "stringify_ids": True,
-        "count": 1500
+        'user_id': user_id,
+        'stringify_ids': True,
+        'count': 1500
     }
     res = twitter.get(url, params = params)
     if res.status_code == 200:
-        return json.loads(res.text)["ids"]
+        return json.loads(res.text)['ids']
     else:
         return []
 
@@ -93,25 +93,25 @@ def get_follower_ids(twitter, user_id):
 def get_list_members(twitter, list_id):
     url = "https://api.twitter.com/1.1/lists/members.json"
     params = {
-        "list_id": list_id,
-        "include_entities": False,
-        "skip_status": True,
-        "count": 5000
+        'list_id': list_id,
+        'include_entities': False,
+        'skip_status': True,
+        'count': 5000
     }
     res = twitter.get(url, params = params)
     if res.status_code == 200:
-        return json.loads(res.text)["users"]
+        return json.loads(res.text)['users']
     else:
         return []
 
 # IDまたはスクリーンネームからユーザー取得
 def get_user(twitter, user_id = '', screen_name = ''):
     url = "https://api.twitter.com/1.1/users/show.json"
-    key = "user_id" if user_id else "screen_name"
+    key = 'user_id' if user_id else 'screen_name'
     value = user_id if user_id else screen_name
     params = {
         key: value,
-        "include_entities": False
+        'include_entities': False
     }
     res = twitter.get(url, params = params, timeout = 10)
     if res.status_code == 200:
@@ -121,13 +121,13 @@ def get_user(twitter, user_id = '', screen_name = ''):
 # IDリストまたはスクリーンネームリストからユーザーリスト取得
 def get_users(twitter, user_ids = [], screen_names = []):
     url = "https://api.twitter.com/1.1/users/lookup.json"
-    key = "user_id" if user_ids else "screen_name"
+    key = 'user_id' if user_ids else 'screen_name'
     values = user_ids if user_ids else screen_names
     users = []
     for i in range(math.ceil(len(values)/100)):
         params = {
-            key: ",".join(values[i*100:(i+1)*100]),
-            "include_entities": False
+            key: ','.join(values[i*100:(i+1)*100]),
+            'include_entities': False
         }
         res = twitter.get(url, params = params, timeout = 10)
         if res.status_code == 200:
@@ -139,16 +139,16 @@ def get_tweets(twitter, user_id, count):
     url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
     tweets = []
     params = {
-        "user_id": user_id,
-        "exclude_replies": True,
-        "include_rts": False,
-        "count": 200
+        'user_id': user_id,
+        'exclude_replies': True,
+        'include_rts': False,
+        'count': 200
     }
     for i in range(count//200):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
             tweets.extend(json.loads(res.text))
-            params["max_id"] = tweets[-1]["id_str"]
+            params['max_id'] = tweets[-1]['id_str']
     return tweets
 
 # ホームのタイムライン取得
@@ -156,15 +156,15 @@ def get_timeline(twitter, count):
     url = "https://api.twitter.com/1.1/statuses/home_timeline.json"
     tweets = []
     params = {
-        "exclude_replies": True,
-        "include_rts": True,
-        "count": 200
+        'exclude_replies': True,
+        'include_rts': True,
+        'count': 200
     }
     for i in range(count//200):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
             tweets.extend(json.loads(res.text))
-            params["max_id"] = tweets[-1]["id_str"]
+            params['max_id'] = tweets[-1]['id_str']
     return tweets
 
 # リストのタイムライン取得
@@ -172,26 +172,26 @@ def get_list_timeline(twitter, list_id, count):
     url = "https://api.twitter.com/1.1/lists/statuses.json"
     tweets = []
     params = {
-        "list_id": list_id,
-        "exclude_replies": True,
-        "include_rts": True,
-        "count": 200
+        'list_id': list_id,
+        'exclude_replies': True,
+        'include_rts': True,
+        'count': 200
     }
     for i in range(count//200):
         res = twitter.get(url, params = params)
         if res.status_code == 200:
             tweets.extend(json.loads(res.text))
-            params["max_id"] = tweets[-1]["id_str"]
+            params['max_id'] = tweets[-1]['id_str']
     return tweets
 
 # お気に入り登録したツイートリスト取得
-def get_like_tweets(twitter, user_id, count, target = "", loop = False, day = 0):
+def get_like_tweets(twitter, user_id, count, target = '', loop = False, day = 0):
     url = "https://api.twitter.com/1.1/favorites/list.json"
     tweets, proceed = [], 0
     params = {
-        "user_id": user_id,
-        "count": 200,
-        "exclude_replies": True
+        'user_id': user_id,
+        'count': 200,
+        'exclude_replies': True
     }
     while proceed < count:
         res = twitter.get(url, params = params)
@@ -199,13 +199,13 @@ def get_like_tweets(twitter, user_id, count, target = "", loop = False, day = 0)
             proceed += 200
             for tweet in json.loads(res.text):
                 tweets.append(tweet)
-                if tweet["user"]["id_str"] == target:
+                if tweet['user']['id_str'] == target:
                     return tweets
             try:
-                params["max_id"] = tweets[-1]["id_str"]
+                params['max_id'] = tweets[-1]['id_str']
             except:
                 return tweets
-            if day and is_timeover(tweets[-1]["created_at"], day):
+            if day and is_timeover(tweets[-1]['created_at'], day):
                 return tweets
         elif loop:
             time.sleep(60)
@@ -230,12 +230,12 @@ def get_friendship(twitter, user_ids):
     lines = []
     for i, user in enumerate(user_ids):
         if i%100 == 0:
-            lines.append(user + ",")
+            lines.append(user + ',')
         else:
-            lines[i//100] += user + ","
+            lines[i//100] += user + ','
     for line in lines:
         line = line[:-1]
-        params = { "user_id": line }
+        params = { 'user_id': line }
         res = twitter.get(url, params = params)
         if res.status_code == 200:
             users.extend(json.loads(res.text))
@@ -247,12 +247,12 @@ def get_friendship(twitter, user_ids):
 def check_friendship(twitter, target, source):
     url = "https://api.twitter.com/1.1/friendships/show.json"
     params = {
-        "source_id": source,
-        "target_id": target
+        'source_id': source,
+        'target_id': target
     }
     res = twitter.get(url, params = params)
     if res.status_code == 200:
-        return json.loads(res.text)["relationship"]
+        return json.loads(res.text)['relationship']
     else:
         sys.exit()
 
@@ -280,24 +280,24 @@ def is_timeover(date, day):
 def is_liked(twitter, tweet_id):
     url = "https://api.twitter.com/1.1/statuses/lookup.json"
     params = {
-        "id": tweet_id,
-        "trim_user": True,
-        "include_entities": False
+        'id': tweet_id,
+        'trim_user': True,
+        'include_entities': False
     }
     res = twitter.get(url, params = params)
     if res.status_code == 200:
         tweet = json.loads(res.text)[0]
-        return tweet["favorited"]
+        return tweet['favorited']
 
 # ダイレクトメッセージ
 def direct_message(twitter, target, message):
     url = "https://api.twitter.com/1.1/direct_messages/events/new.json"
     data = {
-        "event": {
-            "type": "message_create",
-            "message_create": {
-                "target": { "recipient_id": target },
-                "message_data": { "text": message }
+        'event': {
+            'type': 'message_create',
+            'message_create': {
+                'target': { 'recipient_id': target },
+                'message_data': { 'text': message }
             }
         }
     }
@@ -307,22 +307,22 @@ def direct_message(twitter, target, message):
 # お気に入り登録
 def like(twitter, tweet_id):
     url = "https://api.twitter.com/1.1/favorites/create.json"
-    res = twitter.post(url, params = {"id": tweet_id})
+    res = twitter.post(url, params = {'id': tweet_id})
     return res
 
 # お気に入り登録解除
 def dislike(twitter, tweet_id):
     url = "https://api.twitter.com/1.1/favorites/destroy.json"
-    res = twitter.post(url, params = {"id": tweet_id})
+    res = twitter.post(url, params = {'id': tweet_id})
     return res
 
 # リストへユーザー追加
 def add_user(twitter, list_id, user_id = '', screen_name = ''):
-    key = "user_id" if user_id else "screen_name"
-    value = user_id if user_id else screen_name
     url = "https://api.twitter.com/1.1/lists/members/create.json"
+    key = 'user_id' if user_id else 'screen_name'
+    value = user_id if user_id else screen_name
     params = {
-        "list_id": list_id,
+        'list_id': list_id,
         key: value
     }
     res = twitter.post(url, params = params)
@@ -330,11 +330,11 @@ def add_user(twitter, list_id, user_id = '', screen_name = ''):
 
 # リストからユーザー削除
 def delete_user(twitter, list_id, user_id = '', screen_name = ''):
-    key = "user_id" if user_id else "screen_name"
-    value = user_id if user_id else screen_name
     url = "https://api.twitter.com/1.1/lists/members/destroy.json"
+    key = 'user_id' if user_id else 'screen_name'
+    value = user_id if user_id else screen_name
     params = {
-        "list_id": list_id,
+        'list_id': list_id,
         key: value
     }
     res = twitter.post(url, params = params)
@@ -345,18 +345,18 @@ def tweet(twitter, tweet, media = None):
     url_text = "https://api.twitter.com/1.1/statuses/update.json"
     url_media = "https://upload.twitter.com/1.1/media/upload.json"
     if media:
-        files = {"media" : media}
+        files = {'media' : media}
         res = twitter.post(url_media, files = files)
         media_id = json.loads(res.text)['media_id']
-        params = {'status': tweet, "media_ids": [media_id]}
+        params = {'status': tweet, 'media_ids': [media_id]}
         res = twitter.post(url_text, params = params)
     else:
-        params = {"status": tweet}
+        params = {'status': tweet}
         res = twitter.post(url_text, params = params)
     return res
 
 # ツイート削除
 def delete_tweet(twitter, tweet_id):
     url = f"https://api.twitter.com/1.1/statuses/destroy/{tweet_id}.json"
-    res = twitter.post(url, params = {"id": tweet_id})
+    res = twitter.post(url, params = {'id': tweet_id})
     return res

@@ -56,5 +56,5 @@ if __name__ == '__main__':
     elif len(sys.argv) == 2:
         execute(sys.argv[1])
     else:
-        print("Usage: python3 {0} [list_name] (trim_list_name)".format(sys.argv[0]))
+        print("Usage: python3 {0} [LIST_NAME] (EXCLUDED_LIST_NAME)".format(sys.argv[0]))
         sys.exit()

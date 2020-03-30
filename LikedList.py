@@ -1,10 +1,11 @@
 import MyTwitter, sys, requests, json
 
+API_URL = "https://notice-database.herokuapp.com/notices"
+
 # 通知取得
 def get_notices(size = 10):
-    url = "https://notice-database.herokuapp.com/notices"
     params = {'size': size}
-    res = requests.get(url, params = params)
+    res = requests.get(API_URL, params = params)
     notices = json.loads(res.text)
     return notices
 

@@ -1,14 +1,13 @@
 import MyTwitter, time, json, sys, datetime
 
-class FavoriteChecker():
+class LikeChecker():
 
     def __init__(self, list_name = None):
         self.twitter, self.user_id = MyTwitter.login()
         self.list_id = MyTwitter.get_list_id(list_name) if list_name else ''
         self.friends = MyTwitter.get_list_members(self.twitter, self.list_id)
         self.friends = [friend['id_str'] for friend in self.friends] + [self.user_id]
-        self.follows = MyTwitter.get_friends(self.twitter, self.user_id)
-        self.follows = [user for user in self.follows if user['id_str'] not in self.friends]
+        self.follows = [user for user in MyTwitter.get_friends(self.twitter, self.user_id) if user['id_str'] not in self.friends]
         self.users = []
         self.get_date = lambda date: str(MyTwitter.get_date(date))
 
@@ -65,21 +64,21 @@ class FavoriteChecker():
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
-        FavoriteChecker = FavoriteChecker(sys.argv[1])
+        LikeChecker = LikeChecker(sys.argv[1])
     elif len(sys.argv) == 1:
-        FavoriteChecker = FavoriteChecker()
+        LikeChecker = LikeChecker()
     else:
         print("Usage: python3 {0} (EXCLUDED_LIST_NAME)".format(sys.argv[0]))
         sys.exit()
-    FavoriteChecker.setup()
+    LikeChecker.setup()
     input('\n')
     while True:
         try:
-            FavoriteChecker.show_fav_user()
+            LikeChecker.show_fav_user()
             break
         except:
             pass
     input('=' * 50 + '\n')
-    FavoriteChecker.show_not_fav_user()
+    LikeChecker.show_not_fav_user()
     input('=' * 50 + '\n')
-    FavoriteChecker.show_protected_user()
+    LikeChecker.show_protected_user()

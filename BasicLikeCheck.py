@@ -1,4 +1,4 @@
-import MyTwitter, time, json, sys, datetime
+import MyTwitter, sys
 
 class LikeChecker():
 

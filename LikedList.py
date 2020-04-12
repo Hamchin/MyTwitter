@@ -22,6 +22,8 @@ def add_users(twitter, list_name, target_ids, member_ids, trim_ids):
     for target_id in target_ids:
         if target_id in trim_ids: continue
         if target_id in member_ids: continue
+        target = MyTwitter.get_user(twitter, user_id = target_id)
+        if not target['following']: continue
         MyTwitter.add_user(twitter, list_id, user_id = target_id)
 
 # リストからユーザー削除

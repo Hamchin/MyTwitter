@@ -1,7 +1,7 @@
 import sqlite3, requests, json
 
 DATABASE_PATH = 'data/notices.db'
-NOTICE_API = json.load(open('data/notice_api.json', 'r'))
+NOTICE_API = json.load(open('data/reference.json', 'r'))
 
 # データベース操作用デコレーター
 def database(func):

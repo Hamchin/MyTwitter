@@ -5,6 +5,7 @@ def check_friendship(twitter, target, source):
     try:
         user = MyTwitter.get_user(twitter, target[0])
         relation = MyTwitter.check_friendship(twitter, user['id_str'], source)
+        if relation is None: raise
         message = user['name'] + '\n'
         message += '@' + user['screen_name'] + '\n'
         # ブロックされている場合
@@ -29,8 +30,7 @@ def check_friendship(twitter, target, source):
 
 def execute():
     twitter, user_id = MyTwitter.login()
-    with open('data/follower.json', 'r') as f:
-        friends = json.load(f)
+    friends = json.load(open('data/follower.json', 'r'))
     followers = MyTwitter.get_followers(twitter, user_id)
     if followers == []:
         sys.exit()
@@ -39,8 +39,7 @@ def execute():
         if target[0] not in follower_ids:
             check_friendship(twitter, target, user_id)
     followers = [[user['id_str'], user['screen_name'], user['name']] for user in followers]
-    with open('data/follower.json', 'w') as f:
-        json.dump(followers, f, indent = 4)
+    json.dump(followers, open('data/follower.json', 'w'), indent = 4)
 
 if __name__ == '__main__':
     execute()

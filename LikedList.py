@@ -1,11 +1,10 @@
-import MyTwitter, sys, requests, json
-
-API_URL = "https://notice-database.herokuapp.com/notices"
+import MyTwitter, NoticeDB, sys, requests, json
 
 # 通知取得
 def get_notices(size = 10):
+    url = NoticeDB.NOTICE_API['ENDPOINT'] + NoticeDB.NOTICE_API['GET_NOTICES_URI']
     params = {'size': size}
-    res = requests.get(API_URL, params = params)
+    res = requests.get(url, params = params)
     notices = json.loads(res.text)
     return notices
 
@@ -23,6 +22,7 @@ def add_users(twitter, list_name, target_ids, member_ids, trim_ids):
         if target_id in trim_ids: continue
         if target_id in member_ids: continue
         target = MyTwitter.get_user(twitter, user_id = target_id)
+        if target is None: continue
         if not target['following']: continue
         MyTwitter.add_user(twitter, list_id, user_id = target_id)
 

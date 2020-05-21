@@ -2,8 +2,7 @@ import MyTwitter, random, json, sys, json
 
 def get_friends():
     twitter, user_id = MyTwitter.login()
-    with open('data/follower.json', 'r') as f:
-        friends = json.load(f)
+    friends = json.load(open('data/follower.json', 'r'))
     friends = [user[0] for user in friends]
     friends = MyTwitter.get_users(twitter, user_ids = friends)
     return friends

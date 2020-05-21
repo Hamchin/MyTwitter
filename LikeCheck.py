@@ -1,7 +1,5 @@
 import MyTwitter, NoticeDB, requests, json, datetime
 
-NOTICE_API = json.load(open('data/notice_api.json', 'r'))
-
 class LikeChecker():
     twitter = None
     user_id = None
@@ -102,7 +100,7 @@ class LikeChecker():
 
     # 通知を取得する
     def get_notices(self):
-        url = NOTICE_API['ENDPOINT'] + NOTICE_API['GET_NOTICES_URI']
+        url = NoticeDB.NOTICE_API['ENDPOINT'] + NoticeDB.NOTICE_API['GET_NOTICES_URI']
         params = {'size': 10000}
         res = requests.get(url, params = params)
         remote_notices = json.loads(res.text)

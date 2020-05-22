@@ -4,9 +4,15 @@ class LikeChecker():
     twitter = None
     user_id = None
     excluded_list = None # {'name': LIST_NAME, 'id': LIST_ID}
-    target_type = None # 'Following' or 'Followers' or 'Both'
-    display_type = None # 'Like Count' or 'Last Date'
-    target_types = ['Following', 'Followers', 'Both']
+    target_type = None
+    display_type = None
+    target_types = [
+        'Following',
+        'Followers',
+        'Follow / Followed',
+        'Follow / Not Followed',
+        'Not Follow / Followed'
+    ]
     display_types = ['Like Count', 'Last Date']
 
     # 初期化
@@ -82,14 +88,27 @@ class LikeChecker():
 
     # 対象ユーザーを取得する
     def get_targets(self):
+        # フォロー
         if self.target_type == 'Following':
             targets = MyTwitter.get_friends(self.twitter, self.user_id)
+        # フォロワー
         elif self.target_type == 'Followers':
             targets = MyTwitter.get_followers(self.twitter, self.user_id)
-        elif self.target_type == 'Both':
+        # 相互フォロー
+        elif self.target_type == 'Follow / Followed':
             friends = MyTwitter.get_friends(self.twitter, self.user_id)
             follower_ids = MyTwitter.get_follower_ids(self.twitter, self.user_id)
             targets = [user for user in friends if user['id_str'] in follower_ids]
+        # 片思い
+        elif self.target_type == 'Follow / Not Followed':
+            friends = MyTwitter.get_friends(self.twitter, self.user_id)
+            follower_ids = MyTwitter.get_follower_ids(self.twitter, self.user_id)
+            targets = [user for user in friends if user['id_str'] not in follower_ids]
+        # 片思われ
+        elif self.target_type == 'Not Follow / Followed':
+            followers = MyTwitter.get_followers(self.twitter, self.user_id)
+            friend_ids = MyTwitter.get_friend_ids(self.twitter, self.user_id)
+            targets = [user for user in followers if user['id_str'] not in friend_ids]
         else:
             raise Exception("Invalid Target Type")
         if self.excluded_list['id']:

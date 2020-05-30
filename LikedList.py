@@ -1,4 +1,6 @@
-import MyTwitter, NoticeDB, sys, requests, json
+import MyTwitter, sys, requests, json
+
+NOTICE_API = json.load(open('data/reference.json', 'r'))
 
 class List():
     name = ''
@@ -35,7 +37,7 @@ class ListUpdater():
 
     # 通知取得
     def get_notices(self, size):
-        url = NoticeDB.NOTICE_API['ENDPOINT'] + NoticeDB.NOTICE_API['GET_NOTICES_URI']
+        url = NOTICE_API['ENDPOINT'] + NOTICE_API['GET_NOTICES_URI']
         params = {'size': size}
         res = requests.get(url, params = params)
         notices = json.loads(res.text)

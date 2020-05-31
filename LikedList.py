@@ -1,4 +1,4 @@
-import MyTwitter, sys, requests, json
+import MyTwitter, sys, requests, json, datetime
 
 NOTICE_API = json.load(open('data/reference.json', 'r'))
 
@@ -31,17 +31,24 @@ class ListUpdater():
         self.twitter, self.user_id = MyTwitter.login()
         self.list_instances = list_instances
         self.trim_list_instance = trim_list_instance
-        self.notices = self.get_notices(100)
+        self.notices = self.get_notices(size = 100, days = 1)
         self.sender_ids = list(set([notice['sender_id'] for notice in self.notices]))
         self.friend_ids = MyTwitter.get_friend_ids(self.twitter, self.user_id)
 
     # 通知取得
-    def get_notices(self, size):
+    def get_notices(self, size, days = None):
         url = NOTICE_API['ENDPOINT'] + NOTICE_API['GET_NOTICES_URI']
-        params = {'size': size}
+        params = {'size': 0}
         res = requests.get(url, params = params)
         notices = json.loads(res.text)
         notices = [notice for notice in notices if notice['receiver_id'] == self.user_id]
+        if days:
+            now = datetime.datetime.now()
+            date = now - datetime.timedelta(days = days)
+            timestamp = int(date.timestamp())
+            index = next(i for i, notice in enumerate(notices) if notice['timestamp'] < timestamp)
+            size = max(size, index)
+        notices = notices[:size]
         return notices
 
     # リストへユーザー追加

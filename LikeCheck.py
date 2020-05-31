@@ -122,7 +122,7 @@ class LikeChecker():
     # 通知を取得する
     def get_notices(self):
         url = NOTICE_API['ENDPOINT'] + NOTICE_API['GET_NOTICES_URI']
-        params = {'size': 100000}
+        params = {'size': 0}
         res = requests.get(url, params = params)
         notices = json.loads(res.text)
         notices = [notice for notice in notices if notice['receiver_id'] == self.user_id]

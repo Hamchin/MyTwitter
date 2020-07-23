@@ -29,8 +29,9 @@ def check_friendship(twitter, target, source):
         if res.status_code != 200: sys.exit()
 
 def execute():
+    file = 'data/follower.json'
     twitter, user_id = MyTwitter.login()
-    friends = json.load(open('data/follower.json', 'r'))
+    friends = json.load(open(file, 'r'))
     followers = MyTwitter.get_followers(twitter, user_id)
     if followers == []:
         sys.exit()
@@ -39,7 +40,7 @@ def execute():
         if target[0] not in follower_ids:
             check_friendship(twitter, target, user_id)
     followers = [[user['id_str'], user['screen_name'], user['name']] for user in followers]
-    json.dump(followers, open('data/follower.json', 'w'), indent = 4)
+    json.dump(followers, open(file, 'w'), indent = 4, ensure_ascii = False)
 
 if __name__ == '__main__':
     execute()

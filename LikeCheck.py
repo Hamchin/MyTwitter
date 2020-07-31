@@ -1,6 +1,8 @@
-import MyTwitter, requests, json, datetime
+import MyTwitter, os, json, requests, datetime
+from dotenv import load_dotenv
 
-NOTICE_API = json.load(open('data/reference.json', 'r'))
+load_dotenv()
+NOTICE_API_URL = os.getenv('NOTICE_API_URL')
 
 class LikeChecker():
     twitter = None
@@ -68,8 +70,8 @@ class LikeChecker():
 
     # リストの情報を取得する
     def get_lists(self):
-        lists = json.load(open('data/lists.json', 'r'))
-        lists = [{'name': name, 'id': ID} for name, ID in lists.items()]
+        lists = MyTwitter.get_list(self.twitter, self.user_id)
+        lists = [{'id': data['id_str'], 'name': data['name']} for data in lists]
         return lists
 
     # 文字列を整数へ変換する
@@ -121,9 +123,8 @@ class LikeChecker():
 
     # 通知を取得する
     def get_notices(self):
-        url = NOTICE_API['ENDPOINT'] + NOTICE_API['GET_NOTICES_URI']
         params = {'size': 0}
-        res = requests.get(url, params = params)
+        res = requests.get(NOTICE_API_URL, params = params)
         notices = json.loads(res.text)
         notices = [notice for notice in notices if notice['receiver_id'] == self.user_id]
         return notices

@@ -1,4 +1,4 @@
-import MyTwitter, random, json, sys, json
+import MyTwitter, sys, json, random
 
 def get_friends():
     twitter, user_id = MyTwitter.login()
@@ -7,13 +7,13 @@ def get_friends():
     friends = MyTwitter.get_users(twitter, user_ids = friends)
     return friends
 
-def get_fav_data(tweets, day):
-    tweets_after = [t for t in tweets if not MyTwitter.is_timeover(t['created_at'], day)]
-    tweets_before = [t['id_str'] for t in tweets if not MyTwitter.is_timeover(t['created_at'], day - 1)]
-    tweets_after = [t for t in tweets_after if t['id_str'] not in tweets_before]
-    favourites = len(tweets_after)
-    favourites_people = len(list(set([(t['user']['id_str'], t['user']['screen_name']) for t in tweets_after])))
-    return favourites, favourites_people
+def get_like_data(tweets, day):
+    tweets_after = [tweet for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], day)]
+    tweets_before = [tweet['id_str'] for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], day - 1)]
+    target_tweets = [tweet for tweet in tweets_after if tweet['id_str'] not in tweets_before]
+    likes = len(target_tweets)
+    like_users = len(list(set([tweet['user']['id_str'] for tweet in target_tweets])))
+    return likes, like_users
 
 def preprocess(twitter, users, count = 0):
     data = []
@@ -29,7 +29,7 @@ def preprocess(twitter, users, count = 0):
         print(f"{i+1} / {len(users)}")
         tweets = MyTwitter.get_like_tweets(twitter, user['id_str'], 5000, loop = True, day = 5)
         print(f"Tweets: {len(tweets)}", end = '\t')
-        tweets = [t for t in tweets if t['retweet_count'] < 20 and t['favorite_count'] < 50 and not t['entities'].get('media')]
+        tweets = [tweet for tweet in tweets if tweet['retweet_count'] < 20 and tweet['favorite_count'] < 50]
         print(f"Preprocess: {len(tweets)}\n")
         data_dict = {
             'id_str': user['id_str'],
@@ -38,13 +38,13 @@ def preprocess(twitter, users, count = 0):
             'friends_count': user['friends_count'],
             'followers_count': user['followers_count'],
             'statuses_count': user['statuses_count'],
-            'favourites_count': user['favourites_count']
+            'like_count': user['favourites_count']
         }
-        data_dict['favourites_1day'], data_dict['favourites_people_1day'] = get_fav_data(tweets, 1)
-        data_dict['favourites_2day'], data_dict['favourites_people_2day'] = get_fav_data(tweets, 2)
-        data_dict['favourites_3day'], data_dict['favourites_people_3day'] = get_fav_data(tweets, 3)
-        data_dict['favourites_4day'], data_dict['favourites_people_4day'] = get_fav_data(tweets, 4)
-        data_dict['favourites_5day'], data_dict['favourites_people_5day'] = get_fav_data(tweets, 5)
+        data_dict['likes_1day'], data_dict['like_users_1day'] = get_like_data(tweets, 1)
+        data_dict['likes_2day'], data_dict['like_users_2day'] = get_like_data(tweets, 2)
+        data_dict['likes_3day'], data_dict['like_users_3day'] = get_like_data(tweets, 3)
+        data_dict['likes_4day'], data_dict['like_users_4day'] = get_like_data(tweets, 4)
+        data_dict['likes_5day'], data_dict['like_users_5day'] = get_like_data(tweets, 5)
         data.append(data_dict)
     return data
 
@@ -86,7 +86,7 @@ def get_data_from_tag():
     return data
 
 def show_data(data):
-    key = lambda i: f'favourites_people_{i}day'
+    key = lambda i: f'like_users_{i}day'
     total = lambda d: d[key(1)] + d[key(2)] + d[key(3)] + d[key(4)] + d[key(5)]
     data = sorted(data, key = lambda d: total(d), reverse = True)
     for d in data:

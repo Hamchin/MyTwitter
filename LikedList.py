@@ -43,6 +43,11 @@ class ListUpdater():
         res = requests.get(NOTICE_API_URL, params = params)
         notices = json.loads(res.text)
         notices = [notice for notice in notices if notice['receiver_id'] == self.user_id]
+        # メディアツイートのみに対する通知に絞る
+        tweet_ids = list(set([notice['tweet_id'] for notice in notices]))
+        tweets = MyTwitter.get_tweets(self.twitter, tweet_ids)
+        tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
+        notices = [notice for notice in notices if notice['tweet_id'] in tweet_ids]
         # 最新100件または1日以内の通知に絞る
         now = datetime.datetime.now()
         date = now - datetime.timedelta(days = 1)
@@ -50,11 +55,6 @@ class ListUpdater():
         index = next(i for i, notice in enumerate(notices) if notice['timestamp'] < timestamp)
         size = max(100, index)
         notices = notices[:size]
-        # メディアツイートのみに対する通知に絞る
-        tweet_ids = list(set([notice['tweet_id'] for notice in notices]))
-        tweets = MyTwitter.get_tweets(self.twitter, tweet_ids)
-        tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
-        notices = [notice for notice in notices if notice['tweet_id'] in tweet_ids]
         return notices
 
     # リストへユーザー追加

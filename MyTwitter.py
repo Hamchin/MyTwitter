@@ -114,8 +114,23 @@ def get_users(twitter, user_ids = [], screen_names = []):
         users.extend(json.loads(res.text))
     return users
 
+# 複数のツイートを取得する
+def get_tweets(twitter, tweet_ids):
+    url = "https://api.twitter.com/1.1/statuses/lookup.json"
+    tweets = []
+    for i in range(math.ceil(len(tweet_ids)/100)):
+        params = {
+            'id': ','.join(tweet_ids[i*100:(i+1)*100]),
+            'include_entities': False,
+            'trim_user': True
+        }
+        res = twitter.get(url, params = params, timeout = 10)
+        if res.status_code != 200: continue
+        tweets.extend(json.loads(res.text))
+    return tweets
+
 # ユーザータイムラインを取得する
-def get_tweets(twitter, user_id, count):
+def get_user_timeline(twitter, user_id, count):
     url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
     params = {
         'user_id': user_id,
@@ -132,7 +147,7 @@ def get_tweets(twitter, user_id, count):
     return tweets
 
 # ホームタイムラインを取得する
-def get_timeline(twitter, count):
+def get_home_timeline(twitter, count):
     url = "https://api.twitter.com/1.1/statuses/home_timeline.json"
     params = {
         'exclude_replies': True,

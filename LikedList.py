@@ -6,92 +6,68 @@ NOTICE_API_URL = os.getenv('NOTICE_API_URL')
 
 class List():
     id = ''
-    member_ids = []
-    # フォローしているユーザーを除外するかどうか
-    trim_friends = False
-    # フォローしていないユーザーを除外するかどうか
-    trim_not_friends = False
-
-    def __init__(self, list_id, trim_friends = False, trim_not_friends = False):
+    user_ids = []
+    def __init__(self, twitter, list_id):
+        if list_id is None: return
         self.id = list_id
-        self.trim_friends = trim_friends
-        self.trim_not_friends = trim_not_friends
-        twitter, user_id = MyTwitter.login()
-        members = MyTwitter.get_list_members(twitter, self.id)
-        self.member_ids = [member['id_str'] for member in members]
+        users = MyTwitter.get_list_members(twitter, self.id)
+        self.user_ids = [user['id_str'] for user in users]
 
-class ListUpdater():
-    twitter = None
-    user_id = ''
-    notices = []
-    sender_ids = []
-    friend_ids = []
-    target_list = None
-    excluded_list = None
-
-    def __init__(self, target_list, excluded_list):
-        self.twitter, self.user_id = MyTwitter.login()
-        self.target_list = target_list
-        self.excluded_list = excluded_list
-        self.notices = self.get_notices()
-        self.sender_ids = list(set([notice['sender_id'] for notice in self.notices]))
-        self.friend_ids = MyTwitter.get_friend_ids(self.twitter, self.user_id)
-
-    # 通知取得
-    def get_notices(self):
-        params = {'size': 1000}
-        res = requests.get(NOTICE_API_URL, params = params)
-        notices = json.loads(res.text)
-        notices = [notice for notice in notices if notice['receiver_id'] == self.user_id]
-        # メディアツイートのみに対する通知に絞る
-        tweet_ids = list(set([notice['tweet_id'] for notice in notices]))
-        tweets = MyTwitter.get_tweets(self.twitter, tweet_ids)
-        tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
-        notices = [notice for notice in notices if notice['tweet_id'] in tweet_ids]
-        # 最新100件または1日以内の通知に絞る
-        now = datetime.datetime.now()
-        date = now - datetime.timedelta(days = 1)
+# 通知を取得する
+def get_notices(twitter, user_id):
+    params = {'size': 1000}
+    res = requests.get(NOTICE_API_URL, params = params)
+    notices = json.loads(res.text)
+    notices = [notice for notice in notices if notice['receiver_id'] == user_id]
+    # メディアツイートのみに対する通知に絞る
+    tweet_ids = list(set([notice['tweet_id'] for notice in notices]))
+    tweets = MyTwitter.get_tweets(twitter, tweet_ids)
+    media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
+    notices = [notice for notice in notices if notice['tweet_id'] in media_tweet_ids]
+    # ① 1日前以降の通知を取得する
+    # ② 合計取得件数が100未満の場合は①に戻る
+    date = datetime.datetime.now()
+    left_notices, right_notices = [], notices
+    while True:
+        if right_notices == []: break
+        if len(left_notices) >= 100: break
+        date = date - datetime.timedelta(days = 1)
         timestamp = int(date.timestamp())
-        index = next(i for i, notice in enumerate(notices) if notice['timestamp'] < timestamp)
-        size = max(100, index)
-        notices = notices[:size]
-        return notices
+        while True:
+            if right_notices == []: break
+            if right_notices[0]['timestamp'] < timestamp: break
+            notice = right_notices.pop(0)
+            left_notices.append(notice)
+    return left_notices
 
-    # リストへユーザー追加
-    def add_users(self, target_list, target_ids):
-        for target_id in target_ids:
-            if target_id in target_list.member_ids: continue
-            MyTwitter.add_user(self.twitter, target_list.id, user_id = target_id)
+# リストへユーザーを追加する
+def add_users(twitter, target_list, target_ids):
+    for target_id in target_ids:
+        if target_id in target_list.user_ids: continue
+        MyTwitter.add_user(twitter, target_list.id, user_id = target_id)
 
-    # リストからユーザー削除
-    def delete_users(self, target_list, target_ids):
-        for member_id in target_list.member_ids:
-            if member_id in target_ids: continue
-            MyTwitter.delete_user(self.twitter, target_list.id, user_id = member_id)
+# リストからユーザーを削除する
+def delete_users(twitter, target_list, target_ids):
+    for member_id in target_list.user_ids:
+        if member_id in target_ids: continue
+        MyTwitter.delete_user(twitter, target_list.id, user_id = member_id)
 
-    # リスト更新
-    def update(self):
-        target_ids = self.sender_ids
-        if self.excluded_list:
-            trim_ids = self.excluded_list.member_ids
-            target_ids = [id for id in target_ids if id not in trim_ids]
-        if self.target_list.trim_friends:
-            target_ids = [id for id in target_ids if id not in self.friend_ids]
-        if self.target_list.trim_not_friends:
-            target_ids = [id for id in target_ids if id in self.friend_ids]
-        self.add_users(self.target_list, target_ids)
-        self.delete_users(self.target_list, target_ids)
+# リストを更新する
+def update(target_list_id, excluded_list_id = None):
+    twitter, user_id = MyTwitter.login()
+    target_list = List(twitter, target_list_id)
+    excluded_list = List(twitter, excluded_list_id)
+    notices = get_notices(twitter, user_id)
+    sender_ids = list(set([notice['sender_id'] for notice in notices]))
+    sender_ids = [id for id in sender_ids if id not in excluded_list.user_ids]
+    add_users(twitter, target_list, sender_ids)
+    delete_users(twitter, target_list, sender_ids)
 
 if __name__ == '__main__':
-    target_list = None
-    excluded_list = None
     if len(sys.argv) == 2:
-        target_list = List(sys.argv[1])
+        update(sys.argv[1])
     elif len(sys.argv) == 3:
-        target_list = List(sys.argv[1])
-        excluded_list = List(sys.argv[2])
+        update(sys.argv[1], sys.argv[2])
     else:
         print(f"Usage: python3 {sys.argv[0]} [TARGET_LIST_ID] [EXCLUDED_LIST_ID]")
         sys.exit()
-    updater = ListUpdater(target_list, excluded_list)
-    updater.update()

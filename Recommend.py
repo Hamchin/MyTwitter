@@ -1,4 +1,4 @@
-import MyTwitter, sys, json, random
+import MyTwitter, json, time, random
 
 def get_friends():
     twitter, user_id = MyTwitter.login()
@@ -15,6 +15,29 @@ def get_like_data(tweets, day):
     like_users = len(list(set([tweet['user']['id_str'] for tweet in target_tweets])))
     return likes, like_users
 
+def get_like_tweets(twitter, user_id):
+    url = "https://api.twitter.com/1.1/favorites/list.json"
+    params = {
+        'user_id': user_id,
+        'count': 200,
+        'exclude_replies': True
+    }
+    tweets, proceed = [], 0
+    while proceed < 5000:
+        res = twitter.get(url, params = params)
+        if res.status_code == 200:
+            proceed += 200
+            tweets.extend(json.loads(res.text))
+            try:
+                params['max_id'] = tweets[-1]['id_str']
+            except:
+                return tweets
+            if MyTwitter.is_timeover(tweets[-1]['created_at'], 5):
+                return tweets
+        else:
+            time.sleep(60)
+    return tweets
+
 def preprocess(twitter, users, count = 0):
     data = []
     print("Number of User")
@@ -27,7 +50,7 @@ def preprocess(twitter, users, count = 0):
     for i, user in enumerate(users):
         if user['protected']: continue
         print(f"{i+1} / {len(users)}")
-        tweets = MyTwitter.get_like_tweets(twitter, user['id_str'], 5000, loop = True, day = 5)
+        tweets = get_like_tweets(twitter, user['id_str'])
         print(f"Tweets: {len(tweets)}", end = '\t')
         tweets = [tweet for tweet in tweets if tweet['retweet_count'] < 20 and tweet['favorite_count'] < 50]
         print(f"Preprocess: {len(tweets)}\n")

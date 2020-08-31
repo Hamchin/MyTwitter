@@ -1,6 +1,6 @@
 from requests_oauthlib import OAuth1Session
 from dotenv import load_dotenv
-import os, json, time, math, datetime, re
+import os, json, math, datetime, re
 
 load_dotenv()
 
@@ -115,14 +115,14 @@ def get_users(twitter, user_ids = [], screen_names = []):
     return users
 
 # 複数のツイートを取得する
-def get_tweets(twitter, tweet_ids):
+def get_tweets(twitter, tweet_ids, trim_user = True):
     url = "https://api.twitter.com/1.1/statuses/lookup.json"
     tweets = []
     for i in range(math.ceil(len(tweet_ids)/100)):
         params = {
             'id': ','.join(tweet_ids[i*100:(i+1)*100]),
             'include_entities': False,
-            'trim_user': True
+            'trim_user': trim_user
         }
         res = twitter.get(url, params = params, timeout = 10)
         if res.status_code != 200: continue
@@ -130,12 +130,12 @@ def get_tweets(twitter, tweet_ids):
     return tweets
 
 # ユーザータイムラインを取得する
-def get_user_timeline(twitter, user_id, count):
+def get_user_timeline(twitter, user_id, count, exclude_replies = True, include_rts = True):
     url = "https://api.twitter.com/1.1/statuses/user_timeline.json"
     params = {
         'user_id': user_id,
-        'exclude_replies': True,
-        'include_rts': False,
+        'exclude_replies': exclude_replies,
+        'include_rts': include_rts,
         'count': 200
     }
     tweets = []
@@ -147,11 +147,11 @@ def get_user_timeline(twitter, user_id, count):
     return tweets
 
 # ホームタイムラインを取得する
-def get_home_timeline(twitter, count):
+def get_home_timeline(twitter, count, exclude_replies = True, include_rts = True):
     url = "https://api.twitter.com/1.1/statuses/home_timeline.json"
     params = {
-        'exclude_replies': True,
-        'include_rts': True,
+        'exclude_replies': exclude_replies,
+        'include_rts': include_rts,
         'count': 200
     }
     tweets = []
@@ -171,12 +171,12 @@ def get_list(twitter, user_id):
     return json.loads(res.text)
 
 # リストのタイムラインを取得する
-def get_list_timeline(twitter, list_id, count):
+def get_list_timeline(twitter, list_id, count, exclude_replies = True, include_rts = True):
     url = "https://api.twitter.com/1.1/lists/statuses.json"
     params = {
         'list_id': list_id,
-        'exclude_replies': True,
-        'include_rts': True,
+        'exclude_replies': exclude_replies,
+        'include_rts': include_rts,
         'count': 200
     }
     tweets = []
@@ -188,30 +188,19 @@ def get_list_timeline(twitter, list_id, count):
     return tweets
 
 # 対象ユーザーがいいねしたツイートリストを取得する
-def get_like_tweets(twitter, user_id, count, target = '', loop = False, day = 0):
+def get_like_tweets(twitter, user_id, count):
     url = "https://api.twitter.com/1.1/favorites/list.json"
     params = {
         'user_id': user_id,
         'count': 200,
         'exclude_replies': True
     }
-    tweets, proceed = [], 0
-    while proceed < count:
+    tweets = []
+    for i in range(count//200):
         res = twitter.get(url, params = params)
-        if res.status_code == 200:
-            proceed += 200
-            for tweet in json.loads(res.text):
-                tweets.append(tweet)
-                if tweet['user']['id_str'] == target:
-                    return tweets
-            try:
-                params['max_id'] = tweets[-1]['id_str']
-            except:
-                return tweets
-            if day and is_timeover(tweets[-1]['created_at'], day):
-                return tweets
-        elif loop:
-            time.sleep(60)
+        if res.status_code != 200: break
+        tweets.extend(json.loads(res.text))
+        params['max_id'] = tweets[-1]['id_str']
     return tweets
 
 # ユーザーリストとの関係を取得する
@@ -247,10 +236,6 @@ def check_friendship(twitter, target, source):
 def get_date(date):
     try:
         return datetime.datetime.strptime(date, "%a %b %d %H:%M:%S +0000 %Y")
-    except:
-        pass
-    try:
-        return datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
     except:
         pass
     return None

@@ -1,6 +1,6 @@
-import MyTwitter, sys, json
+import MyTwitter, json
 
-# リレーションシップチェック
+# ユーザー間の関係をチェックする
 def check_friendship(twitter, target, source):
     try:
         user = MyTwitter.get_user(twitter, target[0])
@@ -13,7 +13,7 @@ def check_friendship(twitter, target, source):
             message += "ブロックされました"
         # ブロブロ解除された場合
         elif relation['source']['following'] == False:
-            message += "ブロブロ解除された可能性あり"
+            message += "ブロブロ解除されました"
         # フォロー解除された場合
         elif relation['source']['followed_by'] == False:
             message += "フォロー解除されました"
@@ -26,21 +26,23 @@ def check_friendship(twitter, target, source):
         message += "失踪しました"
     finally:
         res = MyTwitter.direct_message(twitter, source, message)
-        if res.status_code != 200: sys.exit()
+        if res.status_code != 200: return False
+    return True
 
-def execute():
+# フォローチェック
+def check():
     file = 'data/follower.json'
     twitter, user_id = MyTwitter.login()
     friends = json.load(open(file, 'r'))
     followers = MyTwitter.get_followers(twitter, user_id)
-    if followers == []:
-        sys.exit()
+    if followers == []: return
     follower_ids = [user['id_str'] for user in followers]
     for target in friends:
         if target[0] not in follower_ids:
-            check_friendship(twitter, target, user_id)
+            status = check_friendship(twitter, target, user_id)
+            if status == False: return
     followers = [[user['id_str'], user['screen_name'], user['name']] for user in followers]
     json.dump(followers, open(file, 'w'), indent = 4, ensure_ascii = False)
 
 if __name__ == '__main__':
-    execute()
+    check()

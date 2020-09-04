@@ -24,21 +24,26 @@ def get_notices(twitter, user_id):
     tweets = MyTwitter.get_tweets(twitter, tweet_ids)
     media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
     notices = [notice for notice in notices if notice['tweet_id'] in media_tweet_ids]
-    # ① 1日前以降の通知を取得する
-    # ② 合計取得件数が100未満の場合は①に戻る
+    return notices
+
+# 通知の送信ユーザーを取得する
+def get_sender_ids(notices):
+    sender_ids = []
     date = datetime.datetime.now()
-    left_notices, right_notices = [], notices
+    # ① 最新1日分の通知を取得する
+    # ② 送信ユーザーの合計が100人未満の場合は①へ戻る
     while True:
-        if right_notices == []: break
-        if len(left_notices) >= 100: break
+        if notices == []: break
+        if len(sender_ids) >= 100: break
         date = date - datetime.timedelta(days = 1)
         timestamp = int(date.timestamp())
         while True:
-            if right_notices == []: break
-            if right_notices[0]['timestamp'] < timestamp: break
-            notice = right_notices.pop(0)
-            left_notices.append(notice)
-    return left_notices
+            if notices == []: break
+            if notices[0]['timestamp'] < timestamp: break
+            notice = notices.pop(0)
+            if notice['sender_id'] in sender_ids: continue
+            sender_ids.append(notice['sender_id'])
+    return sender_ids
 
 # リストへユーザーを追加する
 def add_users(twitter, target_list, target_ids):
@@ -58,7 +63,7 @@ def update(target_list_id, excluded_list_id = None):
     target_list = List(twitter, target_list_id)
     excluded_list = List(twitter, excluded_list_id)
     notices = get_notices(twitter, user_id)
-    sender_ids = list(set([notice['sender_id'] for notice in notices]))
+    sender_ids = get_sender_ids(notices)
     sender_ids = [id for id in sender_ids if id not in excluded_list.user_ids]
     add_users(twitter, target_list, sender_ids)
     delete_users(twitter, target_list, sender_ids)
@@ -70,4 +75,3 @@ if __name__ == '__main__':
         update(sys.argv[1], sys.argv[2])
     else:
         print(f"Usage: python3 {sys.argv[0]} [TARGET_LIST_ID] [EXCLUDED_LIST_ID]")
-        sys.exit()

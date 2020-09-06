@@ -6,11 +6,11 @@ load_dotenv()
 
 # ログイン
 def login():
-    CK = os.getenv('CONSUMER_KEY')
-    CS = os.getenv('CONSUMER_SECRET')
-    AT = os.getenv('ACCESS_TOKEN')
-    AS = os.getenv('ACCESS_SECRET')
-    user_id = os.getenv('USER_ID')
+    CK = os.environ['CONSUMER_KEY']
+    CS = os.environ['CONSUMER_SECRET']
+    AT = os.environ['ACCESS_TOKEN']
+    AS = os.environ['ACCESS_SECRET']
+    user_id = os.environ['USER_ID']
     twitter = OAuth1Session(CK, CS, AT, AS)
     return twitter, user_id
 

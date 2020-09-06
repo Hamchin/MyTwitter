@@ -2,7 +2,7 @@ import MyTwitter, os, json, requests, datetime
 from dotenv import load_dotenv
 
 load_dotenv()
-NOTICE_API_URL = os.getenv('NOTICE_API_URL')
+NOTICE_API_URL = os.environ['NOTICE_API_URL']
 
 class LikeChecker():
     twitter = None

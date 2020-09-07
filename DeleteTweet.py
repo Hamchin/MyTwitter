@@ -7,9 +7,11 @@ def delete():
     twitter, user_id = MyTwitter.login()
     count = input("\nTweet Count >> ")
     count = 2000 if count == '' else int(count)
-    # メディアツイート以外のツイートを取得する
+    # メディアツイート以外のツイートおよびリツイートを取得する
     tweets = MyTwitter.get_user_timeline(twitter, user_id, count, exclude_replies = False, include_rts = True)
-    tweets = [tweet for tweet in tweets if 'extended_entities' not in tweet]
+    is_media = lambda tweet: 'extended_entities' in tweet
+    is_retweet = lambda tweet: 'retweeted_status' in tweet
+    tweets = [tweet for tweet in tweets if not is_media(tweet) or is_retweet(tweet)]
     if tweets == []: return
     print()
     # ツイートを表示する
@@ -20,8 +22,11 @@ def delete():
     print()
     # ツイートを削除する
     for i, tweet in enumerate(tweets):
-        res = MyTwitter.delete_tweet(twitter, tweet['id_str'])
-        message = f"({i+1} / {len(tweets)})\t{tweet['id_str']}\t{res.status_code}"
+        tweet_id = tweet['id_str']
+        delete_tweet = lambda: MyTwitter.delete_tweet(twitter, tweet_id)
+        delete_retweet = lambda: MyTwitter.delete_retweet(twitter, tweet_id)
+        res = delete_retweet() if is_retweet(tweet) else delete_tweet()
+        message = f"({i+1} / {len(tweets)})\t{tweet_id}\t{res.status_code}"
         if res.status_code != 200: message = RED + message + END
         print(message)
 

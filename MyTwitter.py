@@ -283,8 +283,41 @@ def like(twitter, tweet_id):
     return res
 
 # 対象ツイートのいいねを取り消す
-def dislike(twitter, tweet_id):
+def delete_like(twitter, tweet_id):
     url = "https://api.twitter.com/1.1/favorites/destroy.json"
+    res = twitter.post(url, params = {'id': tweet_id})
+    return res
+
+# リツイートを実行する
+def retweet(twitter, tweet_id):
+    url = f"https://api.twitter.com/1.1/statuses/retweet/{tweet_id}.json"
+    res = twitter.post(url)
+    return res
+
+# リツイートを取り消す
+def delete_retweet(twitter, tweet_id):
+    url = f"https://api.twitter.com/1.1/statuses/unretweet/{tweet_id}.json"
+    res = twitter.post(url)
+    return res
+
+# ツイートを投稿する
+def tweet(twitter, tweet, media = None):
+    url_text = "https://api.twitter.com/1.1/statuses/update.json"
+    url_media = "https://upload.twitter.com/1.1/media/upload.json"
+    if media:
+        files = {'media' : media}
+        res = twitter.post(url_media, files = files)
+        media_id = json.loads(res.text)['media_id']
+        params = {'status': tweet, 'media_ids': [media_id]}
+        res = twitter.post(url_text, params = params)
+    else:
+        params = {'status': tweet}
+        res = twitter.post(url_text, params = params)
+    return res
+
+# ツイートを削除する
+def delete_tweet(twitter, tweet_id):
+    url = f"https://api.twitter.com/1.1/statuses/destroy/{tweet_id}.json"
     res = twitter.post(url, params = {'id': tweet_id})
     return res
 
@@ -310,25 +343,4 @@ def delete_user(twitter, list_id, user_id = '', screen_name = ''):
         key: value
     }
     res = twitter.post(url, params = params)
-    return res
-
-# ツイートする
-def tweet(twitter, tweet, media = None):
-    url_text = "https://api.twitter.com/1.1/statuses/update.json"
-    url_media = "https://upload.twitter.com/1.1/media/upload.json"
-    if media:
-        files = {'media' : media}
-        res = twitter.post(url_media, files = files)
-        media_id = json.loads(res.text)['media_id']
-        params = {'status': tweet, 'media_ids': [media_id]}
-        res = twitter.post(url_text, params = params)
-    else:
-        params = {'status': tweet}
-        res = twitter.post(url_text, params = params)
-    return res
-
-# ツイートを削除する
-def delete_tweet(twitter, tweet_id):
-    url = f"https://api.twitter.com/1.1/statuses/destroy/{tweet_id}.json"
-    res = twitter.post(url, params = {'id': tweet_id})
     return res

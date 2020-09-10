@@ -5,11 +5,11 @@ load_dotenv()
 NOTICE_API_URL = os.environ['NOTICE_API_URL']
 
 class LikeChecker():
+    notices = []
     twitter = None
     user_id = None
     excluded_list = None # {'name': LIST_NAME, 'id': LIST_ID}
     target_type = None
-    display_type = None
     target_types = [
         'Following',
         'Followers',
@@ -17,20 +17,23 @@ class LikeChecker():
         'Follow / Not Followed',
         'Not Follow / Followed'
     ]
-    display_types = ['Like Count', 'Last Date']
 
     # 初期化
-    def __init__(self, excluded_list = None, target_type = None, display_type = None):
+    def __init__(self, excluded_list = None, target_type = None):
         self.twitter, self.user_id = MyTwitter.login()
         self.excluded_list = excluded_list
         self.target_type = target_type
-        self.display_type = display_type
 
-    # 全項目について質問する
-    def ask_all(self):
-        self.ask_excluded_list()
-        self.ask_target_type()
-        self.ask_display_type()
+    # リストの情報を取得する
+    def get_lists(self):
+        lists = MyTwitter.get_list(self.twitter, self.user_id)
+        lists = [{'id': data['id_str'], 'name': data['name']} for data in lists]
+        return lists
+
+    # 文字列を整数へ変換する
+    def get_number(self, string):
+        assert(string.isdecimal())
+        return int(string)
 
     # 除外するリストを質問する
     def ask_excluded_list(self):
@@ -56,39 +59,6 @@ class LikeChecker():
         assert(1 <= index <= len(self.target_types))
         target_type = self.target_types[index - 1]
         self.target_type = target_type
-
-    # 表示タイプを質問する
-    def ask_display_type(self):
-        print()
-        for i, display_type in enumerate(self.display_types):
-            print(f"{i+1}: {display_type}")
-        in_str = input('\n' + "? Display Mode (Number): ")
-        index = self.get_number(in_str)
-        assert(1 <= index <= len(self.display_types))
-        display_type = self.display_types[index - 1]
-        self.display_type = display_type
-
-    # リストの情報を取得する
-    def get_lists(self):
-        lists = MyTwitter.get_list(self.twitter, self.user_id)
-        lists = [{'id': data['id_str'], 'name': data['name']} for data in lists]
-        return lists
-
-    # 文字列を整数へ変換する
-    def get_number(self, string):
-        assert(string.isdecimal())
-        return int(string)
-
-    # いいねチェック
-    def check(self):
-        targets = self.get_targets()
-        notices = self.get_notices()
-        if self.display_type == 'Like Count':
-            self.check_like_count(targets, notices)
-        elif self.display_type == 'Last Date':
-            self.check_last_date(targets, notices)
-        else:
-            raise Exception("Invalid Display Type")
 
     # 対象ユーザーを取得する
     def get_targets(self):
@@ -123,47 +93,40 @@ class LikeChecker():
 
     # 通知を取得する
     def get_notices(self):
-        params = {'size': 0}
+        params = {'size': 30000}
         res = requests.get(NOTICE_API_URL, params = params)
         notices = json.loads(res.text)
         notices = [notice for notice in notices if notice['receiver_id'] == self.user_id]
         return notices
 
-    # いいね数の降順に表示する
-    def check_like_count(self, targets, notices):
+    # いいねチェック
+    def check(self):
+        targets = self.get_targets()
+        if self.notices == []: self.notices = self.get_notices()
         target_dict = {target['id_str']: target for target in targets}
-        counter = {target['id_str']: 0 for target in targets}
-        for notice in notices:
+        notice_dict = {target['id_str']: {'timestamp': 0, 'count': 0} for target in targets}
+        for notice in self.notices:
             sender_id = notice['sender_id']
             if target_dict.get(sender_id):
-                counter[sender_id] += 1
-        sorted_counter = sorted(counter.items(), key = lambda item: -item[1])
-        print()
-        for user_id, count in sorted_counter:
+                timestamp = max(notice_dict[sender_id]['timestamp'], notice['timestamp'])
+                notice_dict[sender_id]['timestamp'] = timestamp
+                notice_dict[sender_id]['count'] += 1
+        notice_list = sorted(notice_dict.items(), key = lambda item: -item[1]['timestamp'])
+        def get_date(timestamp):
+            return datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
+        print('\n', '=' * 60, '\n', sep = '')
+        for user_id, notice in notice_list:
             user = target_dict[user_id]
-            print(f"{user['name']} : {count}")
+            date = get_date(notice['timestamp']) if notice['timestamp'] else None
+            print(f"Name: {user['name']}")
+            print(f"Last Date: {date}")
+            print(f"Like Count: {notice['count']}")
             print(f"https://twitter.com/{user['screen_name']}\n")
-
-    # いいねした最終日時の新しい順に表示する
-    def check_last_date(self, targets, notices):
-        target_dict = {target['id_str']: target for target in targets}
-        history = {target['id_str']: 0 for target in targets}
-        for notice in notices:
-            sender_id = notice['sender_id']
-            if target_dict.get(sender_id):
-                history[sender_id] = max(history[sender_id], notice['timestamp'])
-        sorted_history = sorted(history.items(), key = lambda item: -item[1])
-        print()
-        for user_id, timestamp in sorted_history:
-            user = target_dict[user_id]
-            if timestamp == 0:
-                date = None
-            else:
-                date = datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
-            print(f"{user['name']} : {date}")
-            print(f"https://twitter.com/{user['screen_name']}\n")
+        print('=' * 60)
 
 if __name__ == '__main__':
     checker = LikeChecker()
-    checker.ask_all()
-    checker.check()
+    while True:
+        checker.ask_excluded_list()
+        checker.ask_target_type()
+        checker.check()

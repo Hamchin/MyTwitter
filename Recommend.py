@@ -1,22 +1,28 @@
-import MyTwitter, json, time, random
+import twitter, json, time, datetime
 
 def get_friends():
-    twitter, user_id = MyTwitter.login()
     friends = json.load(open('data/follower.json', 'r'))
     friends = [user[0] for user in friends]
-    friends = MyTwitter.get_users(twitter, user_ids = friends)
+    friends = twitter.get_users(user_ids = friends)
     return friends
 
-def get_like_data(tweets, day):
-    tweets_after = [tweet for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], day)]
-    tweets_before = [tweet['id_str'] for tweet in tweets if not MyTwitter.is_timeover(tweet['created_at'], day - 1)]
+def is_timeover(created_at, days):
+    date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S +0000 %Y')
+    date = date + datetime.timedelta(hours = 9)
+    standard = datetime.datetime.now()
+    standard = standard - datetime.timedelta(days = days)
+    return standard > date
+
+def get_like_data(tweets, days):
+    tweets_after = [tweet for tweet in tweets if not is_timeover(tweet['created_at'], days)]
+    tweets_before = [tweet['id_str'] for tweet in tweets if not is_timeover(tweet['created_at'], days - 1)]
     target_tweets = [tweet for tweet in tweets_after if tweet['id_str'] not in tweets_before]
     likes = len(target_tweets)
     like_users = len(list(set([tweet['user']['id_str'] for tweet in target_tweets])))
     return likes, like_users
 
-def get_like_tweets(twitter, user_id):
-    url = "https://api.twitter.com/1.1/favorites/list.json"
+def get_like_tweets(user_id):
+    url = 'https://api.twitter.com/1.1/favorites/list.json'
     params = {
         'user_id': user_id,
         'count': 200,
@@ -24,37 +30,38 @@ def get_like_tweets(twitter, user_id):
     }
     tweets, proceed = [], 0
     while proceed < 5000:
-        res = twitter.get(url, params = params)
+        res = twitter.session.get(url, params = params)
         if res.status_code == 200:
             proceed += 200
-            tweets.extend(json.loads(res.text))
+            tweets += res.json()
             try:
                 params['max_id'] = tweets[-1]['id_str']
             except:
                 return tweets
-            if MyTwitter.is_timeover(tweets[-1]['created_at'], 5):
+            if is_timeover(tweets[-1]['created_at'], 5):
                 return tweets
         else:
             time.sleep(60)
     return tweets
 
-def preprocess(twitter, users, count = 0):
-    data = []
-    print("Number of User")
-    print(f"Before:\t{len(users)}")
+def preprocess(users):
+    items = []
+    print('Number of User:')
+    print(f'Before:\t{len(users)}', end = '\t')
     users = [user for user in users if user['followers_count'] < user['friends_count'] < 800]
-    relations = MyTwitter.get_friendship(twitter, user_ids = [user['id_str'] for user in users])
+    user_ids = [user['id_str'] for user in users]
+    relations = twitter.get_friendships(user_ids = user_ids)
     users = [user for user, relation in zip(users, relations) if 'following' not in relation['connections']]
-    print(f"After:\t{len(users)}\n")
-    users = random.sample(users, count) if count else users
+    print(f'After:\t{len(users)}\n')
+    print('Number of Like Tweets:\n')
     for i, user in enumerate(users):
         if user['protected']: continue
-        print(f"{i+1} / {len(users)}")
-        tweets = get_like_tweets(twitter, user['id_str'])
-        print(f"Tweets: {len(tweets)}", end = '\t')
+        print(f'{i+1} / {len(users)}')
+        tweets = get_like_tweets(user['id_str'])
+        print(f'Before: {len(tweets)}', end = '\t')
         tweets = [tweet for tweet in tweets if tweet['retweet_count'] < 20 and tweet['favorite_count'] < 50]
-        print(f"Preprocess: {len(tweets)}\n")
-        data_dict = {
+        print(f'After: {len(tweets)}\n')
+        item = {
             'id_str': user['id_str'],
             'name': user['name'],
             'screen_name': user['screen_name'],
@@ -63,75 +70,31 @@ def preprocess(twitter, users, count = 0):
             'statuses_count': user['statuses_count'],
             'like_count': user['favourites_count']
         }
-        data_dict['likes_1day'], data_dict['like_users_1day'] = get_like_data(tweets, 1)
-        data_dict['likes_2day'], data_dict['like_users_2day'] = get_like_data(tweets, 2)
-        data_dict['likes_3day'], data_dict['like_users_3day'] = get_like_data(tweets, 3)
-        data_dict['likes_4day'], data_dict['like_users_4day'] = get_like_data(tweets, 4)
-        data_dict['likes_5day'], data_dict['like_users_5day'] = get_like_data(tweets, 5)
-        data.append(data_dict)
-    return data
+        item['likes_1day'], item['like_users_1day'] = get_like_data(tweets, 1)
+        item['likes_2day'], item['like_users_2day'] = get_like_data(tweets, 2)
+        item['likes_3day'], item['like_users_3day'] = get_like_data(tweets, 3)
+        item['likes_4day'], item['like_users_4day'] = get_like_data(tweets, 4)
+        item['likes_5day'], item['like_users_5day'] = get_like_data(tweets, 5)
+        items.append(item)
+    return items
 
-def get_data_from_target(screen_name):
-    twitter, _ = MyTwitter.login()
-    user = MyTwitter.get_user(twitter, screen_name = screen_name)
-    users = MyTwitter.get_friends(twitter, user['id_str'])
-    data = preprocess(twitter, users)
-    return data
+def get_items(screen_name):
+    users = twitter.get_friends(screen_name = screen_name)
+    items = preprocess(users)
+    return items
 
-def get_data_from_tag():
-    twitter, user_id = MyTwitter.login()
-    tags = [
-        '#ハムスター',
-        '#ハムスターのいる生活',
-        '#ハムスター好きと繋がりたい'
-    ]
-    keyword = " OR ".join(tags)
-    url = "https://api.twitter.com/1.1/search/tweets.json"
-    params = {
-        'q': keyword,
-        'lang': 'ja',
-        'result_type': 'recent',
-        'count': 100
-    }
-    tweets, users = [], []
-    for i in range(50):
-        res = twitter.get(url, params = params)
-        if res.status_code == 200:
-            timeline = json.loads(res.text)
-            tweets.extend(timeline['statuses'])
-        else:
-            break
-    users = [tweet['user'] for tweet in tweets if tweet['entities']['user_mentions'] == [] and tweet['entities']['urls'] == [] and tweet['entities'].get('media')]
-    for user in users:
-        if user not in users:
-            users.append(user)
-    data = preprocess(twitter, users)
-    return data
-
-def show_data(data):
-    key = lambda i: f'like_users_{i}day'
-    total = lambda d: d[key(1)] + d[key(2)] + d[key(3)] + d[key(4)] + d[key(5)]
-    data = sorted(data, key = lambda d: total(d), reverse = True)
-    for d in data:
-        for k, v in d.items():
-            print(f"{k}\t{v}")
-        print(f"link: https://twitter.com/{d['screen_name']}\n")
+def show_items(items):
+    total = lambda item: sum([item[f'like_users_{i+1}day'] for i in range(5)])
+    items = sorted(items, key = lambda item: total(item), reverse = True)
+    for item in items:
+        for key, value in item.items():
+            print(f'{key}\t{value}')
+        print(f"link: https://twitter.com/{item['screen_name']}\n")
 
 if __name__ == '__main__':
-    while True:
-        print("1: Get Data based on Target (Screen Name)")
-        print("2: Get Data based on Tag")
-        mode = int(input("\n>> "))
-        if mode == 1:
-            screen_name = input("\nScreen Name: ")
-            print('\n', '=' * 50, '\n', sep = '')
-            data = get_data_from_target(screen_name)
-            print('=' * 50, '\n', sep = '')
-            show_data(data)
-            print('=' * 50, '\n', sep = '')
-        elif mode == 2:
-            print('\n', '=' * 50, '\n', sep = '')
-            data = get_data_from_tag()
-            print('=' * 50, '\n', sep = '')
-            show_data(data)
-            print('=' * 50, '\n', sep = '')
+    screen_name = input('\nScreen Name of Based User: ')
+    print('\n', '=' * 50, '\n', sep = '')
+    items = get_items(screen_name)
+    print('=' * 50, end = '\n\n')
+    show_items(items)
+    print('=' * 50, end = '\n\n')

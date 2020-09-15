@@ -1,4 +1,4 @@
-import MyTwitter, os, json, requests, datetime
+import twitter, os, requests, datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -6,8 +6,6 @@ NOTICE_API_URL = os.environ['NOTICE_API_URL']
 
 class LikeChecker():
     notices = []
-    twitter = None
-    user_id = None
     excluded_list = None # {'name': LIST_NAME, 'id': LIST_ID}
     target_type = None
     target_types = [
@@ -20,14 +18,13 @@ class LikeChecker():
 
     # 初期化
     def __init__(self, excluded_list = None, target_type = None):
-        self.twitter, self.user_id = MyTwitter.login()
         self.excluded_list = excluded_list
         self.target_type = target_type
 
     # リストの情報を取得する
     def get_lists(self):
-        lists = MyTwitter.get_list(self.twitter, self.user_id)
-        lists = [{'id': data['id_str'], 'name': data['name']} for data in lists]
+        lists = twitter.get_lists()
+        lists = [{'id': item['id_str'], 'name': item['name']} for item in lists]
         return lists
 
     # 文字列を整数へ変換する
@@ -37,12 +34,12 @@ class LikeChecker():
 
     # 除外するリストを質問する
     def ask_excluded_list(self):
-        excluded_list = {'name': None, 'id': None}
+        excluded_list = None
         lists = self.get_lists()
         print()
         for i, item in enumerate(lists):
             print(f"{i+1}: {item['name']}")
-        in_str = input('\n' + "? Excluded List (Number): ")
+        in_str = input('\n' + '? Excluded List (Number): ')
         if in_str != '':
             index = self.get_number(in_str)
             assert(1 <= index <= len(lists))
@@ -54,7 +51,7 @@ class LikeChecker():
         print()
         for i, target_type in enumerate(self.target_types):
             print(f"{i+1}: {target_type}")
-        in_str = input('\n' + "? Target Users (Number): ")
+        in_str = input('\n' + '? Target Users (Number): ')
         index = self.get_number(in_str)
         assert(1 <= index <= len(self.target_types))
         target_type = self.target_types[index - 1]
@@ -64,29 +61,29 @@ class LikeChecker():
     def get_targets(self):
         # フォロー
         if self.target_type == 'Following':
-            targets = MyTwitter.get_friends(self.twitter, self.user_id)
+            targets = twitter.get_friends()
         # フォロワー
         elif self.target_type == 'Followers':
-            targets = MyTwitter.get_followers(self.twitter, self.user_id)
+            targets = twitter.get_followers()
         # 相互フォロー
         elif self.target_type == 'Follow / Followed':
-            friends = MyTwitter.get_friends(self.twitter, self.user_id)
-            follower_ids = MyTwitter.get_follower_ids(self.twitter, self.user_id)
+            friends = twitter.get_friends()
+            follower_ids = twitter.get_follower_ids()
             targets = [user for user in friends if user['id_str'] in follower_ids]
         # 片思い
         elif self.target_type == 'Follow / Not Followed':
-            friends = MyTwitter.get_friends(self.twitter, self.user_id)
-            follower_ids = MyTwitter.get_follower_ids(self.twitter, self.user_id)
+            friends = twitter.get_friends()
+            follower_ids = twitter.get_follower_ids()
             targets = [user for user in friends if user['id_str'] not in follower_ids]
         # 片思われ
         elif self.target_type == 'Not Follow / Followed':
-            followers = MyTwitter.get_followers(self.twitter, self.user_id)
-            friend_ids = MyTwitter.get_friend_ids(self.twitter, self.user_id)
+            followers = twitter.get_followers()
+            friend_ids = twitter.get_friend_ids()
             targets = [user for user in followers if user['id_str'] not in friend_ids]
         else:
-            raise Exception("Invalid Target Type")
-        if self.excluded_list['id']:
-            excluded_users = MyTwitter.get_list_members(self.twitter, self.excluded_list['id'])
+            raise Exception('Invalid Target Type')
+        if self.excluded_list:
+            excluded_users = twitter.get_list_members(list_id = self.excluded_list['id'])
             excluded_user_ids = [user['id_str'] for user in excluded_users]
             targets = [target for target in targets if target['id_str'] not in excluded_user_ids]
         return targets
@@ -95,8 +92,8 @@ class LikeChecker():
     def get_notices(self):
         params = {'size': 30000}
         res = requests.get(NOTICE_API_URL, params = params)
-        notices = json.loads(res.text)
-        notices = [notice for notice in notices if notice['receiver_id'] == self.user_id]
+        notices = res.json()
+        notices = [notice for notice in notices if notice['receiver_id'] == twitter.user_id]
         return notices
 
     # いいねチェック
@@ -113,7 +110,7 @@ class LikeChecker():
                 notice_dict[sender_id]['count'] += 1
         notice_list = sorted(notice_dict.items(), key = lambda item: -item[1]['timestamp'])
         def get_date(timestamp):
-            return datetime.datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
+            return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d')
         print('\n', '=' * 60, '\n', sep = '')
         for user_id, notice in notice_list:
             user = target_dict[user_id]

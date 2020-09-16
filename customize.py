@@ -3,12 +3,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 NOTICE_API_URL = os.environ['NOTICE_API_URL']
+TARGET_LIST_ID = os.environ['TARGET_LIST_ID']
+EXCLUDED_LIST_ID = os.environ['EXCLUDED_LIST_ID']
 
 class List():
     id = ''
     user_ids = []
     def __init__(self, list_id):
-        if list_id is None: return
+        if list_id == '': return
         self.id = list_id
         users = twitter.get_list_members(list_id = self.id)
         self.user_ids = [user['id_str'] for user in users]
@@ -54,9 +56,9 @@ def delete_users(target_list, target_ids):
         twitter.delete_user(list_id = target_list.id, user_id = member_id)
 
 # リストを更新する
-def update(target_list_id, excluded_list_id = None):
-    target_list = List(target_list_id)
-    excluded_list = List(excluded_list_id)
+def update():
+    target_list = List(TARGET_LIST_ID)
+    excluded_list = List(EXCLUDED_LIST_ID)
     notices = get_notices()
     sender_ids = get_sender_ids(notices)
     sender_ids = [id for id in sender_ids if id not in excluded_list.user_ids]
@@ -64,9 +66,4 @@ def update(target_list_id, excluded_list_id = None):
     delete_users(target_list, sender_ids)
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        update(sys.argv[1])
-    elif len(sys.argv) == 3:
-        update(sys.argv[1], sys.argv[2])
-    else:
-        print(f'Usage: python3 {sys.argv[0]} [TARGET_LIST_ID] [EXCLUDED_LIST_ID]')
+    update()

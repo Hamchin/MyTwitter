@@ -1,11 +1,5 @@
 import twitter, json, time, datetime
 
-def get_friends():
-    friends = json.load(open('data/follower.json', 'r'))
-    friends = [user[0] for user in friends]
-    friends = twitter.get_users(user_ids = friends)
-    return friends
-
 def is_timeover(created_at, days):
     date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S +0000 %Y')
     date = date + datetime.timedelta(hours = 9)

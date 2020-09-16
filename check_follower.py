@@ -1,4 +1,4 @@
-import twitter, json
+import twitter, os, json
 
 # ユーザーとの関係をチェックする
 def check_friendship(target):
@@ -32,7 +32,7 @@ def check_friendship(target):
 # フォロワーチェック
 def check():
     file = 'data/follower.json'
-    friends = json.load(open(file, 'r'))
+    friends = json.load(open(file, 'r')) if os.path.exists(file) else []
     followers = twitter.get_followers()
     if followers == []: return
     follower_ids = [user['id_str'] for user in followers]

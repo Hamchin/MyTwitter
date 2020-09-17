@@ -4,12 +4,16 @@ import os, json
 
 load_dotenv()
 
-CK = os.environ['CONSUMER_KEY']
-CS = os.environ['CONSUMER_SECRET']
-AT = os.environ['ACCESS_TOKEN']
-AS = os.environ['ACCESS_SECRET']
-user_id = os.environ['USER_ID']
-session = OAuth1Session(CK, CS, AT, AS)
+CONSUMER_KEY = os.getenv('CONSUMER_KEY', '')
+CONSUMER_SECRET = os.getenv('CONSUMER_SECRET', '')
+ACCESS_TOKEN = os.getenv('ACCESS_TOKEN', '')
+ACCESS_SECRET = os.getenv('ACCESS_SECRET', '')
+
+session = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
+
+# 自身のユーザーIDを取得する
+def self_id():
+    return ACCESS_TOKEN.split('-')[0]
 
 # フォローしているユーザーをオブジェクトの一覧で取得する
 def get_friends(user_id = None, screen_name = None):
@@ -235,7 +239,7 @@ def get_friendships(user_ids = [], screen_names = []):
     while True:
         if user_values == []: break
         target_values, user_values = user_values[:100], user_values[100:]
-        params = { user_key: ','.join(target_values) }
+        params = {user_key: ','.join(target_values)}
         res = session.get(url, params = params)
         if res.status_code != 200: break
         relations += res.json()
@@ -262,8 +266,8 @@ def direct_message(target_id, text):
         'event': {
             'type': 'message_create',
             'message_create': {
-                'target': { 'recipient_id': target_id },
-                'message_data': { 'text': text }
+                'target': {'recipient_id': target_id},
+                'message_data': {'text': text}
             }
         }
     }
@@ -317,10 +321,10 @@ def tweet(text, media = None):
     url_text = 'https://api.twitter.com/1.1/statuses/update.json'
     url_media = 'https://upload.twitter.com/1.1/media/upload.json'
     if media:
-        files = { 'media': media }
+        files = {'media': media}
         res = session.post(url_media, files = files)
         media_id = res.json()['media_id']
-        params = { 'status': text, 'media_ids': [media_id] }
+        params = {'status': text, 'media_ids': [media_id]}
         res = session.post(url_text, params = params)
     else:
         params = {

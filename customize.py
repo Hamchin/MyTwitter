@@ -2,9 +2,10 @@ import twitter, sys, os, requests, datetime
 from dotenv import load_dotenv
 
 load_dotenv()
-NOTICE_API_URL = os.environ['NOTICE_API_URL']
-TARGET_LIST_ID = os.environ['TARGET_LIST_ID']
-EXCLUDED_LIST_ID = os.environ['EXCLUDED_LIST_ID']
+
+NOTICE_API_URL = os.getenv('NOTICE_API_URL', '')
+TARGET_LIST_ID = os.getenv('TARGET_LIST_ID', '')
+EXCLUDED_LIST_ID = os.getenv('EXCLUDED_LIST_ID', '')
 
 class List():
     id = ''
@@ -17,10 +18,11 @@ class List():
 
 # 通知を取得する
 def get_notices():
-    params = { 'size': 1000 }
-    res = requests.get(NOTICE_API_URL, params = params)
+    self_id = twitter.self_id()
+    params = {'size': 1000}
+    res = requests.get(NOTICE_API_URL + '/notices', params = params)
     notices = res.json()
-    notices = [notice for notice in notices if notice['receiver_id'] == twitter.user_id]
+    notices = [notice for notice in notices if notice['receiver_id'] == self_id]
     # メディアツイートのみに対する通知に絞る
     tweet_ids = list(set([notice['tweet_id'] for notice in notices]))
     tweets = twitter.get_tweets(tweet_ids)

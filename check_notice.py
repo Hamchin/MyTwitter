@@ -2,7 +2,8 @@ import twitter, os, requests, datetime
 from dotenv import load_dotenv
 
 load_dotenv()
-NOTICE_API_URL = os.environ['NOTICE_API_URL']
+
+NOTICE_API_URL = os.getenv('NOTICE_API_URL', '')
 
 class LikeChecker():
     notices = []
@@ -90,10 +91,11 @@ class LikeChecker():
 
     # 通知を取得する
     def get_notices(self):
+        self_id = twitter.self_id()
         params = {'size': 30000}
-        res = requests.get(NOTICE_API_URL, params = params)
+        res = requests.get(NOTICE_API_URL + '/notices', params = params)
         notices = res.json()
-        notices = [notice for notice in notices if notice['receiver_id'] == twitter.user_id]
+        notices = [notice for notice in notices if notice['receiver_id'] == self_id]
         return notices
 
     # いいねチェック

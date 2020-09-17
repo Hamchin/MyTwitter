@@ -4,16 +4,13 @@ import os, json
 
 load_dotenv()
 
-CONSUMER_KEY = os.getenv('CONSUMER_KEY', '')
-CONSUMER_SECRET = os.getenv('CONSUMER_SECRET', '')
-ACCESS_TOKEN = os.getenv('ACCESS_TOKEN', '')
-ACCESS_SECRET = os.getenv('ACCESS_SECRET', '')
+CONSUMER_KEY = os.environ['CONSUMER_KEY']
+CONSUMER_SECRET = os.environ['CONSUMER_SECRET']
+ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
+ACCESS_SECRET = os.environ['ACCESS_SECRET']
 
+user_id = ACCESS_TOKEN.split('-')[0]
 session = OAuth1Session(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_SECRET)
-
-# 自身のユーザーIDを取得する
-def self_id():
-    return ACCESS_TOKEN.split('-')[0]
 
 # フォローしているユーザーをオブジェクトの一覧で取得する
 def get_friends(user_id = None, screen_name = None):

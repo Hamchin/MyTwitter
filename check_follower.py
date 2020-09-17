@@ -25,7 +25,7 @@ def check_friendship(target):
         message += '@' + target_screen_name + '\n'
         message += '失踪しました'
     finally:
-        res = twitter.direct_message(twitter.self_id(), message)
+        res = twitter.direct_message(twitter.user_id, message)
         if res.status_code != 200: return False
     return True
 

@@ -1,4 +1,5 @@
-import twitter, json, time, datetime
+from loader import twitter
+import datetime, time
 
 def is_timeover(created_at, days):
     date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S +0000 %Y')
@@ -8,12 +9,12 @@ def is_timeover(created_at, days):
     return standard > date
 
 def get_like_data(tweets, days):
-    tweets_after = [tweet for tweet in tweets if not is_timeover(tweet['created_at'], days)]
-    tweets_before = [tweet['id_str'] for tweet in tweets if not is_timeover(tweet['created_at'], days - 1)]
-    target_tweets = [tweet for tweet in tweets_after if tweet['id_str'] not in tweets_before]
-    likes = len(target_tweets)
-    like_users = len(list(set([tweet['user']['id_str'] for tweet in target_tweets])))
-    return likes, like_users
+    likes_after = [tweet for tweet in tweets if not is_timeover(tweet['created_at'], days)]
+    likes_before = [tweet['id_str'] for tweet in tweets if not is_timeover(tweet['created_at'], days - 1)]
+    likes = [tweet for tweet in likes_after if tweet['id_str'] not in likes_before]
+    like_users = [tweet['user']['id_str'] for tweet in likes]
+    like_users = list(set(like_users))
+    return len(likes), len(like_users)
 
 def get_like_tweets(user_id):
     url = 'https://api.twitter.com/1.1/favorites/list.json'
@@ -23,7 +24,7 @@ def get_like_tweets(user_id):
         'exclude_replies': True
     }
     tweets, proceed = [], 0
-    while proceed < 5000:
+    while proceed < 1000:
         res = twitter.session.get(url, params = params)
         if res.status_code == 200:
             proceed += 200
@@ -46,15 +47,18 @@ def preprocess(users):
     user_ids = [user['id_str'] for user in users]
     relations = twitter.get_friendships(user_ids = user_ids)
     users = [user for user, relation in zip(users, relations) if 'following' not in relation['connections']]
+    likes_per_tweet = lambda user: user['favourites_count'] / (user['statuses_count'] or 1)
+    users = sorted(users, key = likes_per_tweet, reverse = True)
     print(f'After:\t{len(users)}\n')
-    print('Number of Like Tweets:\n')
+    print('Number of Like Tweets:')
+    users = users[:20]
     for i, user in enumerate(users):
         if user['protected']: continue
-        print(f'{i+1} / {len(users)}')
+        print(f'({i+1} / {len(users)})', end = '\t')
         tweets = get_like_tweets(user['id_str'])
         print(f'Before: {len(tweets)}', end = '\t')
         tweets = [tweet for tweet in tweets if tweet['retweet_count'] < 20 and tweet['favorite_count'] < 50]
-        print(f'After: {len(tweets)}\n')
+        print(f'After: {len(tweets)}')
         item = {
             'id_str': user['id_str'],
             'name': user['name'],
@@ -89,6 +93,5 @@ if __name__ == '__main__':
     screen_name = input('\nScreen Name of Based User: ')
     print('\n', '=' * 50, '\n', sep = '')
     items = get_items(screen_name)
-    print('=' * 50, end = '\n\n')
+    print('\n', '=' * 50, '\n', sep = '')
     show_items(items)
-    print('=' * 50, end = '\n\n')

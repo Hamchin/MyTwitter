@@ -1,9 +1,5 @@
-import twitter, os, requests, datetime
-from dotenv import load_dotenv
-
-load_dotenv()
-
-NOTICE_API_URL = os.environ['NOTICE_API_URL']
+from loader import twitter, NOTICE_API_URL
+import requests, datetime
 
 class LikeChecker():
     notices = []

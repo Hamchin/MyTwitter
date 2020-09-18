@@ -1,11 +1,5 @@
-import twitter, sys, os, requests, datetime
-from dotenv import load_dotenv
-
-load_dotenv()
-
-NOTICE_API_URL = os.environ['NOTICE_API_URL']
-TARGET_LIST_ID = os.environ['TARGET_LIST_ID']
-EXCLUDED_LIST_ID = os.environ['EXCLUDED_LIST_ID']
+from loader import twitter, TARGET_LIST_ID, EXCLUDED_LIST_ID, NOTICE_API_URL
+import requests, datetime
 
 class List():
     id = ''

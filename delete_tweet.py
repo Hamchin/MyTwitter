@@ -1,4 +1,4 @@
-import twitter
+from loader import twitter
 
 RED, END = '\033[31m', '\033[0m'
 

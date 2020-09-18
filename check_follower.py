@@ -1,4 +1,5 @@
-import twitter, os, json
+from loader import twitter
+import os, json
 
 # ユーザーとの関係をチェックする
 def check_friendship(target):

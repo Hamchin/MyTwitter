@@ -29,6 +29,20 @@ class Twitter:
             if params['cursor'] == '0': break
         return users
 
+    # フォローしているユーザーをIDの一覧で取得する
+    def get_friend_ids(self, user_id = None, screen_name = None):
+        url = 'https://api.twitter.com/1.1/friends/ids.json'
+        params = {
+            'user_id': user_id,
+            'screen_name': screen_name,
+            'stringify_ids': True,
+            'count': 5000
+        }
+        res = self.session.get(url, params = params)
+        if res.status_code != 200: return []
+        user_ids = res.json()['ids']
+        return user_ids
+
     # フォロワーをオブジェクトの一覧で取得する
     def get_followers(self, user_id = None, screen_name = None):
         url = 'https://api.twitter.com/1.1/followers/list.json'
@@ -49,20 +63,6 @@ class Twitter:
             if params['cursor'] == '0': break
         return users
 
-    # フォローしているユーザーをIDの一覧で取得する
-    def get_friend_ids(self, user_id = None, screen_name = None):
-        url = 'https://api.twitter.com/1.1/friends/ids.json'
-        params = {
-            'user_id': user_id,
-            'screen_name': screen_name,
-            'stringify_ids': True,
-            'count': 5000
-        }
-        res = self.session.get(url, params = params)
-        if res.status_code != 200: return []
-        user_ids = res.json()['ids']
-        return user_ids
-
     # フォロワーをIDの一覧で取得する
     def get_follower_ids(self, user_id = None, screen_name = None):
         url = 'https://api.twitter.com/1.1/followers/ids.json'
@@ -76,23 +76,6 @@ class Twitter:
         if res.status_code != 200: return []
         user_ids = res.json()['ids']
         return user_ids
-
-    # リストのメンバーを取得する
-    def get_list_members(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None):
-        url = 'https://api.twitter.com/1.1/lists/members.json'
-        params = {
-            'list_id': list_id,
-            'slug': slug,
-            'owner_id': owner_id,
-            'owner_screen_name': owner_screen_name,
-            'skip_status': True,
-            'include_user_entities': False,
-            'count': 5000
-        }
-        res = self.session.get(url, params = params)
-        if res.status_code != 200: return []
-        users = res.json()['users']
-        return users
 
     # ユーザーを取得する
     def get_user(self, user_id = None, screen_name = None):
@@ -186,18 +169,6 @@ class Twitter:
             params['max_id'] = tweets[-1]['id_str']
         return tweets
 
-    # リストの一覧を取得する
-    def get_lists(self, user_id = None, screen_name = None):
-        url = 'https://api.twitter.com/1.1/lists/list.json'
-        params = {
-            'user_id': user_id,
-            'screen_name': screen_name
-        }
-        res = self.session.get(url, params = params)
-        if res.status_code != 200: return []
-        lists = res.json()
-        return lists
-
     # リストのタイムラインを取得する
     def get_list_timeline(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None, count = 200, exclude_replies = True, include_rts = False, trim_user = True):
         url = 'https://api.twitter.com/1.1/lists/statuses.json'
@@ -220,6 +191,77 @@ class Twitter:
             params['max_id'] = tweets[-1]['id_str']
         return tweets
 
+    # リストの一覧を取得する
+    def get_lists(self, user_id = None, screen_name = None):
+        url = 'https://api.twitter.com/1.1/lists/list.json'
+        params = {
+            'user_id': user_id,
+            'screen_name': screen_name
+        }
+        res = self.session.get(url, params = params)
+        if res.status_code != 200: return []
+        lists = res.json()
+        return lists
+
+    # リストのメンバーを取得する
+    def get_list_members(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None):
+        url = 'https://api.twitter.com/1.1/lists/members.json'
+        params = {
+            'list_id': list_id,
+            'slug': slug,
+            'owner_id': owner_id,
+            'owner_screen_name': owner_screen_name,
+            'skip_status': True,
+            'include_user_entities': False,
+            'count': 5000
+        }
+        res = self.session.get(url, params = params)
+        if res.status_code != 200: return []
+        users = res.json()['users']
+        return users
+
+    # リストにメンバーを追加する
+    def add_user(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None, user_id = None, screen_name = None):
+        url = 'https://api.twitter.com/1.1/lists/members/create.json'
+        params = {
+            'list_id': list_id,
+            'slug': slug,
+            'owner_id': owner_id,
+            'owner_screen_name': owner_screen_name,
+            'user_id': user_id,
+            'screen_name': screen_name
+        }
+        res = self.session.post(url, params = params)
+        return res
+
+    # リストからメンバーを削除する
+    def delete_user(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None, user_id = None, screen_name = None):
+        url = 'https://api.twitter.com/1.1/lists/members/destroy.json'
+        params = {
+            'list_id': list_id,
+            'slug': slug,
+            'owner_id': owner_id,
+            'owner_screen_name': owner_screen_name,
+            'user_id': user_id,
+            'screen_name': screen_name
+        }
+        res = self.session.post(url, params = params)
+        return res
+
+    # 2人のユーザーの関係を取得する
+    def get_friendship(self, source_id = None, target_id = None, source_screen_name = None, target_screen_name = None):
+        url = 'https://api.twitter.com/1.1/friendships/show.json'
+        params = {
+            'source_id': source_id,
+            'target_id': target_id,
+            'source_screen_name': source_screen_name,
+            'target_screen_name': target_screen_name
+        }
+        res = self.session.get(url, params = params)
+        if res.status_code != 200: return None
+        relation = res.json()['relationship']
+        return relation
+
     # 自分と対象ユーザーの関係を調べる
     def get_friendships(self, user_ids = [], screen_names = []):
         url = 'https://api.twitter.com/1.1/friendships/lookup.json'
@@ -238,77 +280,6 @@ class Twitter:
             if res.status_code != 200: break
             relations += res.json()
         return relations
-
-    # 2人のユーザーの関係を取得する
-    def get_friendship(self, source_id = None, target_id = None, source_screen_name = None, target_screen_name = None):
-        url = 'https://api.twitter.com/1.1/friendships/show.json'
-        params = {
-            'source_id': source_id,
-            'target_id': target_id,
-            'source_screen_name': source_screen_name,
-            'target_screen_name': target_screen_name
-        }
-        res = self.session.get(url, params = params)
-        if res.status_code != 200: return None
-        relation = res.json()['relationship']
-        return relation
-
-    # ダイレクトメッセージを送信する
-    def direct_message(self, target_id, text):
-        url = 'https://api.twitter.com/1.1/direct_messages/events/new.json'
-        data = {
-            'event': {
-                'type': 'message_create',
-                'message_create': {
-                    'target': {'recipient_id': target_id},
-                    'message_data': {'text': text}
-                }
-            }
-        }
-        res = self.session.post(url, data = json.dumps(data))
-        return res
-
-    # いいねを付ける
-    def like(self, tweet_id):
-        url = 'https://api.twitter.com/1.1/favorites/create.json'
-        params = {
-            'id': tweet_id,
-            'trim_user': True,
-            'include_entities': False
-        }
-        res = self.session.post(url, params = params)
-        return res
-
-    # いいねを取り消す
-    def delete_like(self, tweet_id):
-        url = 'https://api.twitter.com/1.1/favorites/destroy.json'
-        params = {
-            'id': tweet_id,
-            'trim_user': True,
-            'include_entities': False
-        }
-        res = self.session.post(url, params = params)
-        return res
-
-    # リツイートを実行する
-    def retweet(self, tweet_id):
-        url = f'https://api.twitter.com/1.1/statuses/retweet/{tweet_id}.json'
-        params = {
-            'trim_user': True,
-            'include_entities': False
-        }
-        res = self.session.post(url, params = params)
-        return res
-
-    # リツイートを取り消す
-    def delete_retweet(self, tweet_id):
-        url = f'https://api.twitter.com/1.1/statuses/unretweet/{tweet_id}.json'
-        params = {
-            'trim_user': True,
-            'include_entities': False
-        }
-        res = self.session.post(url, params = params)
-        return res
 
     # ツイートを投稿する
     def tweet(self, text = '', media = None):
@@ -340,30 +311,59 @@ class Twitter:
         res = self.session.post(url, params = params)
         return res
 
-    # リストにメンバーを追加する
-    def add_user(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None, user_id = None, screen_name = None):
-        url = 'https://api.twitter.com/1.1/lists/members/create.json'
+    # リツイートを実行する
+    def retweet(self, tweet_id):
+        url = f'https://api.twitter.com/1.1/statuses/retweet/{tweet_id}.json'
         params = {
-            'list_id': list_id,
-            'slug': slug,
-            'owner_id': owner_id,
-            'owner_screen_name': owner_screen_name,
-            'user_id': user_id,
-            'screen_name': screen_name
+            'trim_user': True,
+            'include_entities': False
         }
         res = self.session.post(url, params = params)
         return res
 
-    # リストからメンバーを削除する
-    def delete_user(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None, user_id = None, screen_name = None):
-        url = 'https://api.twitter.com/1.1/lists/members/destroy.json'
+    # リツイートを取り消す
+    def delete_retweet(self, tweet_id):
+        url = f'https://api.twitter.com/1.1/statuses/unretweet/{tweet_id}.json'
         params = {
-            'list_id': list_id,
-            'slug': slug,
-            'owner_id': owner_id,
-            'owner_screen_name': owner_screen_name,
-            'user_id': user_id,
-            'screen_name': screen_name
+            'trim_user': True,
+            'include_entities': False
         }
         res = self.session.post(url, params = params)
+        return res
+
+    # いいねを付ける
+    def like(self, tweet_id):
+        url = 'https://api.twitter.com/1.1/favorites/create.json'
+        params = {
+            'id': tweet_id,
+            'trim_user': True,
+            'include_entities': False
+        }
+        res = self.session.post(url, params = params)
+        return res
+
+    # いいねを取り消す
+    def delete_like(self, tweet_id):
+        url = 'https://api.twitter.com/1.1/favorites/destroy.json'
+        params = {
+            'id': tweet_id,
+            'trim_user': True,
+            'include_entities': False
+        }
+        res = self.session.post(url, params = params)
+        return res
+
+    # ダイレクトメッセージを送信する
+    def direct_message(self, target_id, text):
+        url = 'https://api.twitter.com/1.1/direct_messages/events/new.json'
+        data = {
+            'event': {
+                'type': 'message_create',
+                'message_create': {
+                    'target': {'recipient_id': target_id},
+                    'message_data': {'text': text}
+                }
+            }
+        }
+        res = self.session.post(url, data = json.dumps(data))
         return res

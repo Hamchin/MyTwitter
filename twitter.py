@@ -169,6 +169,18 @@ class Twitter:
             params['max_id'] = tweets[-1]['id_str']
         return tweets
 
+    # リストの一覧を取得する
+    def get_lists(self, user_id = None, screen_name = None):
+        url = 'https://api.twitter.com/1.1/lists/list.json'
+        params = {
+            'user_id': user_id,
+            'screen_name': screen_name
+        }
+        res = self.session.get(url, params = params)
+        if res.status_code != 200: return []
+        lists = res.json()
+        return lists
+
     # リストのタイムラインを取得する
     def get_list_timeline(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None, count = 200, exclude_replies = True, include_rts = False, trim_user = True):
         url = 'https://api.twitter.com/1.1/lists/statuses.json'
@@ -190,18 +202,6 @@ class Twitter:
             tweets += res.json()
             params['max_id'] = tweets[-1]['id_str']
         return tweets
-
-    # リストの一覧を取得する
-    def get_lists(self, user_id = None, screen_name = None):
-        url = 'https://api.twitter.com/1.1/lists/list.json'
-        params = {
-            'user_id': user_id,
-            'screen_name': screen_name
-        }
-        res = self.session.get(url, params = params)
-        if res.status_code != 200: return []
-        lists = res.json()
-        return lists
 
     # リストのメンバーを取得する
     def get_list_members(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None):
@@ -301,10 +301,9 @@ class Twitter:
         return res
 
     # ツイートを削除する
-    def delete_tweet(self, tweet_id):
+    def delete_tweet(self, tweet_id = None):
         url = f'https://api.twitter.com/1.1/statuses/destroy/{tweet_id}.json'
         params = {
-            'id': tweet_id,
             'trim_user': True,
             'include_entities': False
         }
@@ -312,7 +311,7 @@ class Twitter:
         return res
 
     # リツイートを実行する
-    def retweet(self, tweet_id):
+    def retweet(self, tweet_id = None):
         url = f'https://api.twitter.com/1.1/statuses/retweet/{tweet_id}.json'
         params = {
             'trim_user': True,
@@ -322,7 +321,7 @@ class Twitter:
         return res
 
     # リツイートを取り消す
-    def delete_retweet(self, tweet_id):
+    def delete_retweet(self, tweet_id = None):
         url = f'https://api.twitter.com/1.1/statuses/unretweet/{tweet_id}.json'
         params = {
             'trim_user': True,
@@ -332,7 +331,7 @@ class Twitter:
         return res
 
     # いいねを付ける
-    def like(self, tweet_id):
+    def like(self, tweet_id = None):
         url = 'https://api.twitter.com/1.1/favorites/create.json'
         params = {
             'id': tweet_id,
@@ -343,7 +342,7 @@ class Twitter:
         return res
 
     # いいねを取り消す
-    def delete_like(self, tweet_id):
+    def delete_like(self, tweet_id = None):
         url = 'https://api.twitter.com/1.1/favorites/destroy.json'
         params = {
             'id': tweet_id,
@@ -354,7 +353,7 @@ class Twitter:
         return res
 
     # ダイレクトメッセージを送信する
-    def direct_message(self, target_id, text):
+    def direct_message(self, target_id = None, text = ''):
         url = 'https://api.twitter.com/1.1/direct_messages/events/new.json'
         data = {
             'event': {

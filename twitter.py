@@ -133,13 +133,11 @@ class Twitter:
         return tweets
 
     # ユーザータイムラインを取得する
-    def get_user_timeline(self, user_id = None, screen_name = None, count = 200, exclude_replies = True, include_rts = False, trim_user = True):
+    def get_user_timeline(self, user_id = None, screen_name = None, exclude_replies = False, exclude_retweets = False, trim_user = False, count = 200):
         url = 'https://api.twitter.com/1.1/statuses/user_timeline.json'
         params = {
             'user_id': user_id,
             'screen_name': screen_name,
-            'exclude_replies': exclude_replies,
-            'include_rts': include_rts,
             'trim_user': trim_user,
             'include_entities': False,
             'tweet_mode': 'extended',
@@ -152,14 +150,16 @@ class Twitter:
             tweets += res.json()
             if tweets == []: break
             params['max_id'] = tweets[-1]['id_str']
+        if exclude_replies:
+            tweets = [tweet for tweet in tweets if tweet.get('in_reply_to_user_id') is None]
+        if exclude_retweets:
+            tweets = [tweet for tweet in tweets if tweet.get('retweeted_status') is None]
         return tweets
 
     # ホームタイムラインを取得する
-    def get_home_timeline(self, count = 200, exclude_replies = True, include_rts = False, trim_user = True):
+    def get_home_timeline(self, exclude_replies = False, exclude_retweets = False, trim_user = False, count = 200):
         url = 'https://api.twitter.com/1.1/statuses/home_timeline.json'
         params = {
-            'exclude_replies': exclude_replies,
-            'include_rts': include_rts,
             'trim_user': trim_user,
             'include_entities': False,
             'tweet_mode': 'extended',
@@ -172,6 +172,10 @@ class Twitter:
             tweets += res.json()
             if tweets == []: break
             params['max_id'] = tweets[-1]['id_str']
+        if exclude_replies:
+            tweets = [tweet for tweet in tweets if tweet.get('in_reply_to_user_id') is None]
+        if exclude_retweets:
+            tweets = [tweet for tweet in tweets if tweet.get('retweeted_status') is None]
         return tweets
 
     # リストの一覧を取得する
@@ -187,15 +191,13 @@ class Twitter:
         return lists
 
     # リストのタイムラインを取得する
-    def get_list_timeline(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None, count = 200, exclude_replies = True, include_rts = False, trim_user = True):
+    def get_list_timeline(self, list_id = None, slug = None, owner_id = None, owner_screen_name = None, exclude_replies = False, exclude_retweets = False, trim_user = False, count = 200):
         url = 'https://api.twitter.com/1.1/lists/statuses.json'
         params = {
             'list_id': list_id,
             'slug': slug,
             'owner_id': owner_id,
             'owner_screen_name': owner_screen_name,
-            'exclude_replies': exclude_replies,
-            'include_rts': include_rts,
             'trim_user': trim_user,
             'include_entities': False,
             'tweet_mode': 'extended',
@@ -208,6 +210,10 @@ class Twitter:
             tweets += res.json()
             if tweets == []: break
             params['max_id'] = tweets[-1]['id_str']
+        if exclude_replies:
+            tweets = [tweet for tweet in tweets if tweet.get('in_reply_to_user_id') is None]
+        if exclude_retweets:
+            tweets = [tweet for tweet in tweets if tweet.get('retweeted_status') is None]
         return tweets
 
     # リストのメンバーを取得する

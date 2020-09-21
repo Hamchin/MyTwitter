@@ -6,17 +6,19 @@ RED, END = '\033[31m', '\033[0m'
 def delete():
     count = input('\nTweet Count >> ')
     count = 2000 if count == '' else int(count)
-    # メディアツイート以外のツイートおよびリツイートを取得する
-    tweets = twitter.get_user_timeline(count = count, exclude_replies = False, include_rts = True)
-    is_media = lambda tweet: 'extended_entities' in tweet
-    is_retweet = lambda tweet: 'retweeted_status' in tweet
-    tweets = [tweet for tweet in tweets if not is_media(tweet) or is_retweet(tweet)]
+    # テキストツイートおよびリプライおよびリツイートを取得する
+    params = {'exclude_replies': False, 'exclude_retweets': False, 'trim_user': True, 'count': count}
+    tweets = twitter.get_user_timeline(**params)
+    is_media = lambda tweet: tweet.get('extended_entities')
+    is_reply = lambda tweet: tweet.get('in_reply_to_user_id')
+    is_retweet = lambda tweet: tweet.get('retweeted_status')
+    tweets = [tweet for tweet in tweets if not is_media(tweet) or is_reply(tweet) or is_retweet(tweet)]
     if tweets == []: return
     print()
     # ツイートを表示する
     for tweet in tweets:
         print(tweet['created_at'])
-        print(tweet['text'], end = '\n\n')
+        print(tweet['full_text'], end = '\n\n')
     input('Enter to Delete >> ')
     print()
     # ツイートを削除する

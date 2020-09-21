@@ -73,13 +73,13 @@ def lambda_handler(event, context):
         return response(200, tweets)
     # ユーザータイムラインを取得する
     elif path == '/statuses/user_timeline' and method == 'POST':
-        keys = ['user_id', 'screen_name', 'count', 'exclude_replies', 'include_rts', 'trim_user']
+        keys = ['user_id', 'screen_name', 'exclude_replies', 'exclude_retweets', 'trim_user', 'count']
         params = get_params(body, keys)
         tweets = twitter.get_user_timeline(**params)
         return response(200, tweets)
     # ホームタイムラインを取得する
     elif path == '/statuses/home_timeline' and method == 'POST':
-        keys = ['count', 'exclude_replies', 'include_rts', 'trim_user']
+        keys = ['exclude_replies', 'exclude_retweets', 'trim_user', 'count']
         params = get_params(body, keys)
         tweets = twitter.get_home_timeline(**params)
         return response(200, tweets)
@@ -91,7 +91,7 @@ def lambda_handler(event, context):
         return response(200, lists)
     # リストのタイムラインを取得する
     elif path == '/lists/statuses' and method == 'POST':
-        keys = ['list_id', 'slug', 'owner_id', 'owner_screen_name', 'count', 'exclude_replies', 'include_rts', 'trim_user']
+        keys = ['list_id', 'slug', 'owner_id', 'owner_screen_name', 'exclude_replies', 'exclude_retweets', 'trim_user', 'count']
         params = get_params(body, keys)
         tweets = twitter.get_list_timeline(**params)
         return response(200, tweets)

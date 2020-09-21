@@ -31,7 +31,8 @@ def get_sender_ids(notices):
     timestamp = int(date.timestamp())
     sender_ids += [notice['sender_id'] for notice in notices if notice['timestamp'] > timestamp]
     # 最新1件のメディアツイートの通知を取得する
-    tweets = twitter.get_user_timeline(count = 200, exclude_replies = True, include_rts = False)
+    params = {'exclude_replies': True, 'exclude_retweets': True, 'trim_user': True, 'count': 200}
+    tweets = twitter.get_user_timeline(**params)
     media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
     media_tweet_id = media_tweet_ids[0] if media_tweet_ids != [] else ''
     sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] == media_tweet_id]

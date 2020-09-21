@@ -124,7 +124,8 @@ class Twitter:
             params = {
                 'id': ','.join(target_ids),
                 'trim_user': trim_user,
-                'include_entities': False
+                'include_entities': False,
+                'tweet_mode': 'extended'
             }
             res = self.session.get(url, params = params)
             if res.status_code != 200: break
@@ -141,6 +142,7 @@ class Twitter:
             'include_rts': include_rts,
             'trim_user': trim_user,
             'include_entities': False,
+            'tweet_mode': 'extended',
             'count': 200
         }
         tweets = []
@@ -148,6 +150,7 @@ class Twitter:
             res = self.session.get(url, params = params)
             if res.status_code != 200: break
             tweets += res.json()
+            if tweets == []: break
             params['max_id'] = tweets[-1]['id_str']
         return tweets
 
@@ -159,6 +162,7 @@ class Twitter:
             'include_rts': include_rts,
             'trim_user': trim_user,
             'include_entities': False,
+            'tweet_mode': 'extended',
             'count': 200
         }
         tweets = []
@@ -166,6 +170,7 @@ class Twitter:
             res = self.session.get(url, params = params)
             if res.status_code != 200: break
             tweets += res.json()
+            if tweets == []: break
             params['max_id'] = tweets[-1]['id_str']
         return tweets
 
@@ -193,6 +198,7 @@ class Twitter:
             'include_rts': include_rts,
             'trim_user': trim_user,
             'include_entities': False,
+            'tweet_mode': 'extended',
             'count': 200
         }
         tweets = []
@@ -200,6 +206,7 @@ class Twitter:
             res = self.session.get(url, params = params)
             if res.status_code != 200: break
             tweets += res.json()
+            if tweets == []: break
             params['max_id'] = tweets[-1]['id_str']
         return tweets
 

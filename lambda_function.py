@@ -133,37 +133,37 @@ def lambda_handler(event, context):
         return response(200, relations)
     # ツイートを投稿する
     elif path == '/statuses/update' and method == 'POST':
-        keys = ['text', 'media']
+        keys = ['text', 'media', 'trim_user']
         params = get_params(body, keys)
         res = twitter.tweet(**params)
         return response(res.status_code, res.json())
     # ツイートを削除する
     elif path == '/statuses/destroy' and method == 'POST':
-        keys = ['tweet_id']
+        keys = ['tweet_id', 'trim_user']
         params = get_params(body, keys)
         res = twitter.delete_tweet(**params)
         return response(res.status_code, res.json())
     # リツイートを実行する
     elif path == '/statuses/retweet' and method == 'POST':
-        keys = ['tweet_id']
+        keys = ['tweet_id', 'trim_user']
         params = get_params(body, keys)
         res = twitter.retweet(**params)
         return response(res.status_code, res.json())
     # リツイートを取り消す
     elif path == '/statuses/unretweet' and method == 'POST':
-        keys = ['tweet_id']
+        keys = ['tweet_id', 'trim_user']
         params = get_params(body, keys)
         res = twitter.delete_retweet(**params)
         return response(res.status_code, res.json())
     # いいねを付ける
     elif path == '/favorites/create' and method == 'POST':
-        keys = ['tweet_id']
+        keys = ['tweet_id', 'trim_user']
         params = get_params(body, keys)
         res = twitter.like(**params)
         return response(res.status_code, res.json())
     # いいねを取り消す
     elif path == '/favorites/destroy' and method == 'POST':
-        keys = ['tweet_id']
+        keys = ['tweet_id', 'trim_user']
         params = get_params(body, keys)
         res = twitter.delete_like(**params)
         return response(res.status_code, res.json())

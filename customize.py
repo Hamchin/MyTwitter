@@ -18,7 +18,7 @@ def get_notices():
     notices = [notice for notice in notices if notice['receiver_id'] == twitter.user_id]
     # メディアツイートのみに対する通知に絞る
     tweet_ids = list(set([notice['tweet_id'] for notice in notices]))
-    tweets = twitter.get_tweets(tweet_ids)
+    tweets = twitter.get_tweets(tweet_ids = tweet_ids, trim_user = True)
     media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
     notices = [notice for notice in notices if notice['tweet_id'] in media_tweet_ids]
     return notices
@@ -26,16 +26,15 @@ def get_notices():
 # 通知の送信ユーザーを取得する
 def get_sender_ids(notices):
     sender_ids = []
-    # 最新1日分の通知を取得する
+    # 直近1日分の通知を取得する
     date = datetime.datetime.now() - datetime.timedelta(days = 1)
     timestamp = int(date.timestamp())
     sender_ids += [notice['sender_id'] for notice in notices if notice['timestamp'] > timestamp]
-    # 最新1件のメディアツイートの通知を取得する
+    # 直近2件のメディアツイートの通知を取得する
     params = {'exclude_replies': True, 'exclude_retweets': True, 'trim_user': True, 'count': 200}
     tweets = twitter.get_user_timeline(**params)
-    media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
-    media_tweet_id = media_tweet_ids[0] if media_tweet_ids != [] else ''
-    sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] == media_tweet_id]
+    media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet][:2]
+    sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] in media_tweet_ids]
     sender_ids = list(set(sender_ids))
     return sender_ids
 

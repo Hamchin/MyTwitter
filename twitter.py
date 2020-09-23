@@ -115,7 +115,7 @@ class Twitter:
         return users
 
     # ツイートを個別に取得する
-    def get_tweet(self, tweet_id = None, trim_user = True):
+    def get_tweet(self, tweet_id = None, trim_user = False):
         url = 'https://api.twitter.com/1.1/statuses/show.json'
         params = {
             'id': tweet_id,
@@ -129,7 +129,7 @@ class Twitter:
         return tweet
 
     # 複数のツイートを取得する
-    def get_tweets(self, tweet_ids = [], trim_user = True):
+    def get_tweets(self, tweet_ids = [], trim_user = False):
         url = 'https://api.twitter.com/1.1/statuses/lookup.json'
         tweets = []
         while True:
@@ -309,7 +309,7 @@ class Twitter:
         return relations
 
     # ツイートを投稿する
-    def tweet(self, text = '', media = None):
+    def tweet(self, text = '', media = None, trim_user = False):
         url_text = 'https://api.twitter.com/1.1/statuses/update.json'
         url_media = 'https://upload.twitter.com/1.1/media/upload.json'
         if media:
@@ -321,60 +321,66 @@ class Twitter:
         else:
             params = {
                 'status': text,
-                'trim_user': True,
-                'include_entities': False
+                'trim_user': trim_user,
+                'include_entities': False,
+                'tweet_mode': 'extended'
             }
             res = self.session.post(url_text, params = params)
         return res
 
     # ツイートを削除する
-    def delete_tweet(self, tweet_id = None):
+    def delete_tweet(self, tweet_id = None, trim_user = False):
         url = f'https://api.twitter.com/1.1/statuses/destroy/{tweet_id}.json'
         params = {
-            'trim_user': True,
-            'include_entities': False
+            'trim_user': trim_user,
+            'include_entities': False,
+            'tweet_mode': 'extended'
         }
         res = self.session.post(url, params = params)
         return res
 
     # リツイートを実行する
-    def retweet(self, tweet_id = None):
+    def retweet(self, tweet_id = None, trim_user = False):
         url = f'https://api.twitter.com/1.1/statuses/retweet/{tweet_id}.json'
         params = {
-            'trim_user': True,
-            'include_entities': False
+            'trim_user': trim_user,
+            'include_entities': False,
+            'tweet_mode': 'extended'
         }
         res = self.session.post(url, params = params)
         return res
 
     # リツイートを取り消す
-    def delete_retweet(self, tweet_id = None):
+    def delete_retweet(self, tweet_id = None, trim_user = False):
         url = f'https://api.twitter.com/1.1/statuses/unretweet/{tweet_id}.json'
         params = {
-            'trim_user': True,
-            'include_entities': False
+            'trim_user': trim_user,
+            'include_entities': False,
+            'tweet_mode': 'extended'
         }
         res = self.session.post(url, params = params)
         return res
 
     # いいねを付ける
-    def like(self, tweet_id = None):
+    def like(self, tweet_id = None, trim_user = False):
         url = 'https://api.twitter.com/1.1/favorites/create.json'
         params = {
             'id': tweet_id,
-            'trim_user': True,
-            'include_entities': False
+            'trim_user': trim_user,
+            'include_entities': False,
+            'tweet_mode': 'extended'
         }
         res = self.session.post(url, params = params)
         return res
 
     # いいねを取り消す
-    def delete_like(self, tweet_id = None):
+    def delete_like(self, tweet_id = None, trim_user = False):
         url = 'https://api.twitter.com/1.1/favorites/destroy.json'
         params = {
             'id': tweet_id,
-            'trim_user': True,
-            'include_entities': False
+            'trim_user': trim_user,
+            'include_entities': False,
+            'tweet_mode': 'extended'
         }
         res = self.session.post(url, params = params)
         return res

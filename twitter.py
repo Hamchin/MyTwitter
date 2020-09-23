@@ -114,6 +114,20 @@ class Twitter:
             users += res.json()
         return users
 
+    # ツイートを個別に取得する
+    def get_tweet(self, tweet_id = None, trim_user = True):
+        url = 'https://api.twitter.com/1.1/statuses/show.json'
+        params = {
+            'id': tweet_id,
+            'trim_user': trim_user,
+            'include_entities': False,
+            'tweet_mode': 'extended'
+        }
+        res = self.session.get(url, params = params)
+        if res.status_code != 200: return None
+        tweet = res.json()
+        return tweet
+
     # 複数のツイートを取得する
     def get_tweets(self, tweet_ids = [], trim_user = True):
         url = 'https://api.twitter.com/1.1/statuses/lookup.json'

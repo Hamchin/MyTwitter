@@ -66,6 +66,7 @@ $ zip -r package.zip ./python
 | POST | /followers/ids | Get user IDs for followers. |
 | POST | /users/show | Get one user object. |
 | POST | /users/lookup | Get multiple user objects. |
+| POST | /statuses/show | Get one tweet object. |
 | POST | /statuses/lookup | Get multiple tweet objects. |
 | POST | /statuses/user_timeline | Get tweets for the user. |
 | POST | /statuses/home_timeline | Get tweets for friends. |

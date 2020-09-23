@@ -65,6 +65,12 @@ def lambda_handler(event, context):
         params = get_params(body, keys)
         users = twitter.get_users(**params)
         return response(200, users)
+    # ツイートを個別に取得する
+    elif path == '/statuses/show' and method == 'POST':
+        keys = ['tweet_id', 'trim_user']
+        params = get_params(body, keys)
+        tweet = twitter.get_tweet(**params)
+        return response(200, tweet)
     # 複数のツイートを取得する
     elif path == '/statuses/lookup' and method == 'POST':
         keys = ['tweet_ids', 'trim_user']

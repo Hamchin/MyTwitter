@@ -30,12 +30,15 @@ def get_sender_ids(notices):
     date = datetime.datetime.now() - datetime.timedelta(days = 1)
     timestamp = int(date.timestamp())
     sender_ids += [notice['sender_id'] for notice in notices if notice['timestamp'] > timestamp]
-    # 直近2件のメディアツイートの通知を取得する
+    sender_ids = list(set(sender_ids))
+    # 直近のメディアツイートに対する通知を取得する
     params = {'exclude_replies': True, 'exclude_retweets': True, 'trim_user': True, 'count': 200}
     tweets = twitter.get_user_timeline(**params)
-    media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet][:2]
-    sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] in media_tweet_ids]
-    sender_ids = list(set(sender_ids))
+    media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
+    for tweet_id in media_tweet_ids:
+        if len(sender_ids) > 80: break
+        sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] == tweet_id]
+        sender_ids = list(set(sender_ids))
     return sender_ids
 
 # リストへユーザーを追加する

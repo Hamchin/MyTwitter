@@ -35,10 +35,9 @@ def get_sender_ids(notices):
     params = {'exclude_replies': True, 'exclude_retweets': True, 'trim_user': True, 'count': 200}
     tweets = twitter.get_user_timeline(**params)
     media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
-    for tweet_id in media_tweet_ids:
-        if len(sender_ids) > 80: break
-        sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] == tweet_id]
-        sender_ids = list(set(sender_ids))
+    media_tweet_id = media_tweet_ids[0] if media_tweet_ids != [] else ''
+    sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] == media_tweet_id]
+    sender_ids = list(set(sender_ids))
     return sender_ids
 
 # リストへユーザーを追加する

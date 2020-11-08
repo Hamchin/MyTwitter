@@ -1,4 +1,4 @@
-from loader import twitter, TARGET_LIST_ID, EXCLUDED_LIST_ID, NOTICE_API_URL
+from loader import twitter, TARGET_LIST_ID, NOTICE_API_URL
 import requests, datetime
 
 class List():
@@ -55,10 +55,8 @@ def delete_users(target_list, target_ids):
 # リストを更新する
 def update():
     target_list = List(TARGET_LIST_ID)
-    excluded_list = List(EXCLUDED_LIST_ID)
     notices = get_notices()
     sender_ids = get_sender_ids(notices)
-    sender_ids = [id for id in sender_ids if id not in excluded_list.user_ids]
     add_users(target_list, sender_ids)
     delete_users(target_list, sender_ids)
 

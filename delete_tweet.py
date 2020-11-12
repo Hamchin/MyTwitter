@@ -18,21 +18,23 @@ def is_text_tweet(tweet):
 
 # リプライかどうか判定する
 def is_reply(tweet):
-    if not tweet.get(REPLY_KEY): return False
     if tweet.get(RETWEET_KEY): return False
-    return True
+    if tweet.get(REPLY_KEY): return True
+    return False
 
 # リツイートかどうか判定する
 def is_retweet(tweet):
-    if not tweet.get(RETWEET_KEY): return False
-    return True
+    if tweet.get(RETWEET_KEY): return True
+    return False
 
 # 削除処理を実行する
 def take_delete_process(tweets, function = None, message = ''):
     # ツイートをフィルタリングする
     tweets = list(filter(function, tweets))
     if tweets == []: return
-    print('\n', message, '\n', sep = '')
+    print('\n' + '=' * 50)
+    print(message)
+    print('=' * 50 + '\n')
     # ツイートを表示する
     for tweet in tweets:
         print(tweet['created_at'])
@@ -56,9 +58,9 @@ def delete():
     count = 200 if count == '' else int(count)
     params = {'exclude_replies': False, 'exclude_retweets': False, 'trim_user': True, 'count': count}
     tweets = twitter.get_user_timeline(**params)
-    take_delete_process(tweets, function = is_text_tweet, message = 'Text Tweets:')
-    take_delete_process(tweets, function = is_reply, message = 'Reply Tweets:')
-    take_delete_process(tweets, function = is_retweet, message = 'Retweets:')
+    take_delete_process(tweets, function = is_text_tweet, message = 'Text Tweets')
+    take_delete_process(tweets, function = is_reply, message = 'Reply Tweets')
+    take_delete_process(tweets, function = is_retweet, message = 'Retweets')
 
 if __name__ == '__main__':
     delete()

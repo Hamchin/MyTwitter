@@ -54,7 +54,7 @@ def take_delete_process(tweets, function = None, message = ''):
 
 # 不要なツイートを全て削除する
 def delete():
-    count = input('\nTweet Count >> ')
+    count = input('\n' + 'Tweet Count >> ')
     count = 200 if count == '' else int(count)
     params = {'exclude_replies': False, 'exclude_retweets': False, 'trim_user': True, 'count': count}
     tweets = twitter.get_user_timeline(**params)

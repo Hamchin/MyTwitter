@@ -12,7 +12,7 @@ class List():
 
 # 通知を取得する
 def get_notices(media_only = False):
-    params = {'size': 1000}
+    params = {'size': 100}
     notices = requests.get(NOTICE_API_URL + '/notices', params = params).json()
     notices = [notice for notice in notices if notice['receiver_id'] == twitter.user_id]
     # メディアツイートのみに対する通知に絞る

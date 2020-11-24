@@ -87,7 +87,9 @@ class LikeChecker():
 
     # 通知を取得する
     def get_notices(self):
-        params = {'size': 30000}
+        count = input('\n' + '? Number of Notices (Number): ')
+        count = 1000 if count == '' else int(count)
+        params = {'size': count}
         res = requests.get(NOTICE_API_URL + '/notices', params = params)
         notices = res.json()
         notices = [notice for notice in notices if notice['receiver_id'] == twitter.user_id]

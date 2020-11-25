@@ -52,8 +52,7 @@ def take_delete_process(tweets, function = None, message = ''):
         if res.status_code != 200: message = RED + message + END
         print(message)
 
-# 不要なツイートを全て削除する
-def delete():
+if __name__ == '__main__':
     count = input('\n' + 'Tweet Count >> ')
     count = 200 if count == '' else int(count)
     params = {'exclude_replies': False, 'exclude_retweets': False, 'trim_user': True, 'count': count}
@@ -61,6 +60,3 @@ def delete():
     take_delete_process(tweets, function = is_text_tweet, message = 'Text Tweets')
     take_delete_process(tweets, function = is_reply, message = 'Reply Tweets')
     take_delete_process(tweets, function = is_retweet, message = 'Retweets')
-
-if __name__ == '__main__':
-    delete()

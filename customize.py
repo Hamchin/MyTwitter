@@ -11,8 +11,8 @@ class List():
         self.user_ids = [user['id_str'] for user in users]
 
 # 通知を取得する
-def get_notices(media_only = False):
-    params = {'size': 100}
+def get_notices(size = 0, media_only = False):
+    params = {'size': size}
     notices = requests.get(NOTICE_API_URL + '/notices', params = params).json()
     notices = [notice for notice in notices if notice['receiver_id'] == twitter.user_id]
     # メディアツイートのみに対する通知に絞る
@@ -23,22 +23,27 @@ def get_notices(media_only = False):
         notices = [notice for notice in notices if notice['tweet_id'] in media_tweet_ids]
     return notices
 
+# 直近のツイートを取得する
+def get_latest_tweets(size = 0, media_only = False):
+    if size == 0: return []
+    params = {'exclude_replies': True, 'exclude_retweets': True, 'trim_user': True, 'count': 200}
+    tweets = twitter.get_user_timeline(**params)
+    if media_only: tweets = list(filter(lambda tweet: 'extended_entities' in tweet), tweets)
+    return tweets[:size]
+
 # 通知の送信ユーザーを取得する
-def get_sender_ids(notices, days = 1, include_latest_media = False):
+def get_sender_ids(notices, days = 1, latest_tweets_option = {}):
     sender_ids = []
-    # 直近指定日数分の通知を取得する
+    # 直近の通知を取得する
     date = datetime.datetime.now() - datetime.timedelta(days = days)
     timestamp = int(date.timestamp())
     sender_ids += [notice['sender_id'] for notice in notices if notice['timestamp'] > timestamp]
     sender_ids = list(set(sender_ids))
-    # 直近のメディアツイートに対する通知を取得する
-    if include_latest_media:
-        params = {'exclude_replies': True, 'exclude_retweets': True, 'trim_user': True, 'count': 200}
-        tweets = twitter.get_user_timeline(**params)
-        media_tweet_ids = [tweet['id_str'] for tweet in tweets if 'extended_entities' in tweet]
-        media_tweet_id = media_tweet_ids[0] if media_tweet_ids != [] else ''
-        sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] == media_tweet_id]
-        sender_ids = list(set(sender_ids))
+    # 直近のツイートに対する通知を取得する
+    tweets = get_latest_tweets(**latest_tweets_option)
+    tweet_ids = [tweet['id_str'] for tweet in tweets]
+    sender_ids += [notice['sender_id'] for notice in notices if notice['tweet_id'] in tweet_ids]
+    sender_ids = list(set(sender_ids))
     return sender_ids
 
 # リストへユーザーを追加する
@@ -53,13 +58,10 @@ def delete_users(target_list, target_ids):
         if member_id in target_ids: continue
         twitter.delete_user(list_id = target_list.id, user_id = member_id)
 
-# リストを更新する
-def update():
+if __name__ == '__main__':
     target_list = List(TARGET_LIST_ID)
-    notices = get_notices(media_only = False)
-    sender_ids = get_sender_ids(notices, days = 1, include_latest_media = False)
+    notices = get_notices(size = 100, media_only = False)
+    latest_tweets_option = {'size': 1, 'media_only': False}
+    sender_ids = get_sender_ids(notices, days = 1, latest_tweets_option = latest_tweets_option)
     add_users(target_list, sender_ids)
     delete_users(target_list, sender_ids)
-
-if __name__ == '__main__':
-    update()

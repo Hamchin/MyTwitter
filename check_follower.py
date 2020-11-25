@@ -1,5 +1,5 @@
 from loader import twitter
-import os, json
+import os, sys, json
 
 # ユーザーとの関係をチェックする
 def check_friendship(target):
@@ -30,19 +30,15 @@ def check_friendship(target):
         if res.status_code != 200: return False
     return True
 
-# フォロワーチェック
-def check():
+if __name__ == '__main__':
     file = 'data/follower.json'
     friends = json.load(open(file, 'r')) if os.path.exists(file) else []
     followers = twitter.get_followers()
-    if followers == []: return
+    if followers == []: sys.exit()
     follower_ids = [user['id_str'] for user in followers]
     for target in friends:
         if target[0] in follower_ids: continue
         status = check_friendship(target)
-        if status == False: return
+        if status == False: sys.exit()
     followers = [[user['id_str'], user['screen_name'], user['name']] for user in followers]
     json.dump(followers, open(file, 'w'), indent = 4, ensure_ascii = False)
-
-if __name__ == '__main__':
-    check()

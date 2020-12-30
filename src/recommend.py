@@ -77,7 +77,7 @@ def preprocess(twitter, users):
 
 def get_items(twitter, screen_name):
     users = twitter.get_friends(screen_name = screen_name)
-    items = preprocess(users)
+    items = preprocess(twitter, users)
     return items
 
 def show_items(items):

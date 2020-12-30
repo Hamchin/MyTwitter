@@ -36,7 +36,7 @@ VIRTUALENV=virtualenv/bin/activate
 To create zip file:
 
 ```
-$ zip -r function.zip lambda_function.py twitter.py
+$ zip -r function.zip src/lambda_function.py src/twitter.py
 ```
 
 ## Lambda Layer

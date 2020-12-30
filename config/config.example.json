@@ -1,0 +1,15 @@
+{
+    "consumer_key": "",
+    "consumer_secret": "",
+    "access_token": "",
+    "access_secret": "",
+    "notice_api_url": "",
+    "customize": {
+        "target_list_id": "",
+        "media_only": false,
+        "notice_size": 0,
+        "latest_days": 0,
+        "latest_tweets": 0,
+        "min_senders": 0
+    }
+}

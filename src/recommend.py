@@ -1,4 +1,3 @@
-from loader import twitter
 import datetime, time
 
 def is_timeover(created_at, days):
@@ -16,7 +15,7 @@ def get_like_data(tweets, days):
     like_users = list(set(like_users))
     return len(likes), len(like_users)
 
-def get_like_tweets(user_id):
+def get_like_tweets(twitter, user_id):
     url = 'https://api.twitter.com/1.1/favorites/list.json'
     params = {
         'user_id': user_id,
@@ -39,7 +38,7 @@ def get_like_tweets(user_id):
             time.sleep(60)
     return tweets
 
-def preprocess(users):
+def preprocess(twitter, users):
     items = []
     print('Number of User:')
     print(f'Before:\t{len(users)}', end = '\t')
@@ -55,7 +54,7 @@ def preprocess(users):
     for i, user in enumerate(users):
         if user['protected']: continue
         print(f'({i+1} / {len(users)})', end = '\t')
-        tweets = get_like_tweets(user['id_str'])
+        tweets = get_like_tweets(twitter, user['id_str'])
         print(f'Before: {len(tweets)}', end = '\t')
         tweets = [tweet for tweet in tweets if tweet['retweet_count'] < 20 and tweet['favorite_count'] < 50]
         print(f'After: {len(tweets)}')
@@ -76,7 +75,7 @@ def preprocess(users):
         items.append(item)
     return items
 
-def get_items(screen_name):
+def get_items(twitter, screen_name):
     users = twitter.get_friends(screen_name = screen_name)
     items = preprocess(users)
     return items
@@ -89,9 +88,10 @@ def show_items(items):
             print(f'{key}\t{value}')
         print(f"link: https://twitter.com/{item['screen_name']}\n")
 
-if __name__ == '__main__':
+# メイン関数
+def main(twitter):
     screen_name = input('\nScreen Name of Based User: ')
     print('\n', '=' * 50, '\n', sep = '')
-    items = get_items(screen_name)
+    items = get_items(twitter, screen_name)
     print('\n', '=' * 50, '\n', sep = '')
     show_items(items)

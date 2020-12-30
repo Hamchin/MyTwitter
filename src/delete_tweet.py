@@ -1,5 +1,3 @@
-from loader import twitter
-
 # ハイライトカラー
 RED = '\033[31m'
 END = '\033[0m'
@@ -28,7 +26,7 @@ def is_retweet(tweet):
     return False
 
 # 削除処理を実行する
-def take_delete_process(tweets, function = None, message = ''):
+def take_delete_process(twitter, tweets, function = None, message = ''):
     # ツイートをフィルタリングする
     tweets = list(filter(function, tweets))
     if tweets == []: return
@@ -45,18 +43,18 @@ def take_delete_process(tweets, function = None, message = ''):
     # ツイートを削除する
     for i, tweet in enumerate(tweets):
         tweet_id = tweet['id_str']
-        delete_tweet = lambda: twitter.delete_tweet(tweet_id)
-        delete_retweet = lambda: twitter.delete_retweet(tweet_id)
-        res = delete_retweet() if is_retweet(tweet) else delete_tweet()
+        if is_retweet(tweet): res = twitter.delete_retweet(tweet_id)
+        else: res = twitter.delete_tweet(tweet_id)
         message = f'({i+1} / {len(tweets)})\t{tweet_id}\t{res.status_code}'
         if res.status_code != 200: message = RED + message + END
         print(message)
 
-if __name__ == '__main__':
+# メイン関数
+def main(twitter):
     count = input('\n' + 'Tweet Count >> ')
     count = 200 if count == '' else int(count)
     params = {'exclude_replies': False, 'exclude_retweets': False, 'trim_user': True, 'count': count}
     tweets = twitter.get_user_timeline(**params)
-    take_delete_process(tweets, function = is_text_tweet, message = 'Text Tweets')
-    take_delete_process(tweets, function = is_reply, message = 'Reply Tweets')
-    take_delete_process(tweets, function = is_retweet, message = 'Retweets')
+    take_delete_process(twitter, tweets, function = is_text_tweet, message = 'Text Tweets')
+    take_delete_process(twitter, tweets, function = is_reply, message = 'Reply Tweets')
+    take_delete_process(twitter, tweets, function = is_retweet, message = 'Retweets')

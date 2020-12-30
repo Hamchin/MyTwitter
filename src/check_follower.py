@@ -1,8 +1,9 @@
-from loader import twitter
-import os, sys, json
+import os, json
+
+DATA_PATH = 'data/follower.json'
 
 # ユーザーとの関係をチェックする
-def check_friendship(target):
+def check_friendship(twitter, target):
     target_id, target_screen_name, target_name = target
     try:
         relation = twitter.get_friendship(target_id = target_id)
@@ -30,15 +31,15 @@ def check_friendship(target):
         if res.status_code != 200: return False
     return True
 
-if __name__ == '__main__':
-    file = 'data/follower.json'
-    friends = json.load(open(file, 'r')) if os.path.exists(file) else []
+# メイン関数
+def main(twitter):
+    friends = json.load(open(DATA_PATH, 'r')) if os.path.exists(DATA_PATH) else []
     followers = twitter.get_followers()
-    if followers == []: sys.exit()
+    if followers == []: return
     follower_ids = [user['id_str'] for user in followers]
     for target in friends:
         if target[0] in follower_ids: continue
-        status = check_friendship(target)
-        if status == False: sys.exit()
+        status = check_friendship(twitter, target)
+        if status == False: return
     followers = [[user['id_str'], user['screen_name'], user['name']] for user in followers]
-    json.dump(followers, open(file, 'w'), indent = 4, ensure_ascii = False)
+    json.dump(followers, open(DATA_PATH, 'w'), indent = 4, ensure_ascii = False)

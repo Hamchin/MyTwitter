@@ -1,5 +1,6 @@
+import json
+import os
 from twitter import Twitter
-import os, json
 
 # Twitterオブジェクトを取得する
 def get_twitter(data):

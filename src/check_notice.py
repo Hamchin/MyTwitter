@@ -1,4 +1,5 @@
-import requests, datetime
+import datetime
+import requests
 
 FOLLOWING = 'Following'
 FOLLOWERS = 'Followers'

@@ -1,4 +1,5 @@
-import requests, datetime
+import datetime
+import requests
 
 # リストのデータを取得する
 def get_list_data(twitter, list_id):

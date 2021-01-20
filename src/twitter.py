@@ -1,5 +1,5 @@
-from requests_oauthlib import OAuth1Session
 import json
+from requests_oauthlib import OAuth1Session
 
 class Twitter:
     user_id = ''

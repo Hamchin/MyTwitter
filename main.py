@@ -1,6 +1,11 @@
-import sys, json
+import json
+import sys
 from src.twitter import Twitter
-from src import check_follower, check_notice, customize, delete_tweet, recommend
+from src import check_follower
+from src import check_notice
+from src import customize
+from src import delete_tweet
+from src import recommend
 
 config = json.load(open('config/config.json', 'r'))
 

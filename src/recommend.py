@@ -1,4 +1,5 @@
-import datetime, time
+import datetime
+import time
 
 def is_timeover(created_at, days):
     date = datetime.datetime.strptime(created_at, '%a %b %d %H:%M:%S +0000 %Y')

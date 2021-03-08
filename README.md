@@ -4,10 +4,10 @@
 
 ```
 MYTWITTER=/Users/$USER/MyTwitter
-VIRTUALENV=virtualenv/bin/activate
+ACTIVATE=venv/bin/activate
 
-0 * * * * cd $MYTWITTER; source $VIRTUALENV; python3 check_follower.py;
-*/10 * * * * cd $MYTWITTER; source $VIRTUALENV; python3 customize.py;
+* * * * * cd $MYTWITTER; source $ACTIVATE; python3 main.py check_follower;
+* * * * * cd $MYTWITTER; source $ACTIVATE; python3 main.py customize;
 ```
 
 ## Lambda Function

@@ -3,8 +3,8 @@
 ## crontab
 
 ```sh
-0 * * * * cd $HOME/MyTwitter && ./venv/bin/python main.py check_followers
-0 * * * * cd $HOME/MyTwitter && ./venv/bin/python main.py customize
+0 * * * * cd $HOME/MyTwitter && ./venv/bin/python main.py --mode check_followers
+0 * * * * cd $HOME/MyTwitter && ./venv/bin/python main.py --mode customize
 ```
 
 ## Lambda Function

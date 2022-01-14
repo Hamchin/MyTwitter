@@ -330,7 +330,7 @@ class Twitter:
 
     # ツイートを削除する
     def delete_tweet(self, tweet_id = None, trim_user = False):
-        url = f'https://api.twitter.com/1.1/statuses/destroy/{tweet_id}.json'
+        url = f"https://api.twitter.com/1.1/statuses/destroy/{tweet_id}.json"
         params = {
             'trim_user': trim_user,
             'include_entities': False,
@@ -341,7 +341,7 @@ class Twitter:
 
     # リツイートを実行する
     def retweet(self, tweet_id = None, trim_user = False):
-        url = f'https://api.twitter.com/1.1/statuses/retweet/{tweet_id}.json'
+        url = f"https://api.twitter.com/1.1/statuses/retweet/{tweet_id}.json"
         params = {
             'trim_user': trim_user,
             'include_entities': False,
@@ -352,7 +352,7 @@ class Twitter:
 
     # リツイートを取り消す
     def delete_retweet(self, tweet_id = None, trim_user = False):
-        url = f'https://api.twitter.com/1.1/statuses/unretweet/{tweet_id}.json'
+        url = f"https://api.twitter.com/1.1/statuses/unretweet/{tweet_id}.json"
         params = {
             'trim_user': trim_user,
             'include_entities': False,

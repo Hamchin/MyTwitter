@@ -45,7 +45,7 @@ def take_delete_process(twitter, tweets, function = None, message = ''):
         tweet_id = tweet['id_str']
         if is_retweet(tweet): res = twitter.delete_retweet(tweet_id)
         else: res = twitter.delete_tweet(tweet_id)
-        message = f'({i+1} / {len(tweets)})\t{tweet_id}\t{res.status_code}'
+        message = f"({i+1} / {len(tweets)})\t{tweet_id}\t{res.status_code}"
         if res.status_code != 200: message = RED + message + END
         print(message)
 

@@ -42,23 +42,23 @@ def get_like_tweets(twitter, user_id):
 def preprocess(twitter, users):
     items = []
     print('Number of User:')
-    print(f'Before:\t{len(users)}', end = '\t')
+    print(f"Before:\t{len(users)}", end = '\t')
     users = [user for user in users if user['followers_count'] < user['friends_count'] < 800]
     user_ids = [user['id_str'] for user in users]
     relations = twitter.get_friendships(user_ids = user_ids)
     users = [user for user, relation in zip(users, relations) if 'following' not in relation['connections']]
     likes_per_tweet = lambda user: user['favourites_count'] / (user['statuses_count'] or 1)
     users = sorted(users, key = likes_per_tweet, reverse = True)
-    print(f'After:\t{len(users)}\n')
+    print(f"After:\t{len(users)}\n")
     print('Number of Like Tweets:')
     users = users[:20]
     for i, user in enumerate(users):
         if user['protected']: continue
-        print(f'({i+1} / {len(users)})', end = '\t')
+        print(f"({i+1} / {len(users)})", end = '\t')
         tweets = get_like_tweets(twitter, user['id_str'])
-        print(f'Before: {len(tweets)}', end = '\t')
+        print(f"Before: {len(tweets)}", end = '\t')
         tweets = [tweet for tweet in tweets if tweet['retweet_count'] < 20 and tweet['favorite_count'] < 50]
-        print(f'After: {len(tweets)}')
+        print(f"After: {len(tweets)}")
         item = {
             'id_str': user['id_str'],
             'name': user['name'],
@@ -82,11 +82,11 @@ def get_items(twitter, screen_name):
     return items
 
 def show_items(items):
-    total = lambda item: sum([item[f'like_users_{i+1}day'] for i in range(5)])
+    total = lambda item: sum([item[f"like_users_{i+1}day"] for i in range(5)])
     items = sorted(items, key = lambda item: total(item), reverse = True)
     for item in items:
         for key, value in item.items():
-            print(f'{key}\t{value}')
+            print(f"{key}\t{value}")
         print(f"link: https://twitter.com/{item['screen_name']}\n")
 
 # メイン関数

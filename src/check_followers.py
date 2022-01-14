@@ -1,7 +1,7 @@
 import json
 import os
 
-DATA_PATH = 'data/follower.json'
+DATA_PATH = 'data/followers.json'
 
 # ユーザーとの関係をチェックする
 def check_friendship(twitter, target):

@@ -3,7 +3,7 @@
 ## crontab
 
 ```sh
-0 * * * * cd $HOME/MyTwitter && ./venv/bin/python main.py check_follower
+0 * * * * cd $HOME/MyTwitter && ./venv/bin/python main.py check_followers
 0 * * * * cd $HOME/MyTwitter && ./venv/bin/python main.py customize
 ```
 

@@ -63,9 +63,9 @@ def get_date_string(timestamp):
 
 # メイン関数
 def main(twitter, notice_api_url, notices = []):
+    notices = get_notices(twitter, notice_api_url) if notices == [] else notices
     target_type = get_target_type()
     targets = get_targets(twitter, target_type)
-    if notices == []: notices = get_notices(twitter, notice_api_url)
     target_dict = {target['id_str']: target for target in targets}
     notice_dict = {target['id_str']: {'timestamp': 0, 'count': 0} for target in targets}
     for notice in notices:

@@ -23,17 +23,11 @@
 | Name | LambdaAccess2CloudWatchLogs |
 | Policy | CloudWatchLogsFullAccess |
 
-### Environmental Variable
-
-| Key |
-| - |
-| CONSUMER_KEY |
-| CONSUMER_SECRET |
-
 To create zip file:
 
 ```sh
-$ zip -r function.zip src/lambda_function.py src/twitter.py
+$ cd src
+$ zip -r function.zip lambda_function.py twitter.py
 ```
 
 ## Lambda Layer
@@ -46,7 +40,7 @@ $ zip -r function.zip src/lambda_function.py src/twitter.py
 To create zip file:
 
 ```sh
-$ pip3 install -t ./python requests_oauthlib
+$ pip install -t ./python requests_oauthlib
 $ zip -r package.zip ./python
 ```
 

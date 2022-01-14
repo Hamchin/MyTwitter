@@ -1,11 +1,10 @@
 import json
-import os
 from twitter import Twitter
 
 # Twitterオブジェクトを取得する
 def get_twitter(data):
-    consumer_key = os.environ['CONSUMER_KEY']
-    consumer_secret = os.environ['CONSUMER_SECRET']
+    consumer_key = data.get('consumer_key') or ''
+    consumer_secret = data.get('consumer_secret') or ''
     access_token = data.get('access_token') or ''
     access_secret = data.get('access_secret') or ''
     twitter = Twitter(consumer_key, consumer_secret, access_token, access_secret)

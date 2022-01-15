@@ -1,15 +1,17 @@
 {
-    "consumer_key": "",
-    "consumer_secret": "",
-    "access_token": "",
-    "access_secret": "",
-    "notice_api_url": "",
-    "customize": {
-        "target_list_id": "",
-        "media_only": false,
-        "notice_size": 0,
-        "latest_days": 0,
-        "latest_tweets": 0,
-        "min_senders": 0
+    "XXXXXXXXXX": {
+        "consumer_key": "XXXXXXXXXX",
+        "consumer_secret": "XXXXXXXXXX",
+        "access_token": "XXXXXXXXXX",
+        "access_secret": "XXXXXXXXXX",
+        "notice_api_url": "https://XXXXXXXXXX.execute-api.ap-northeast-1.amazonaws.com/v1",
+        "customize": {
+            "target_list_id": "XXXXXXXXXX",
+            "media_only": false,
+            "notice_size": 0,
+            "latest_days": 0,
+            "latest_tweets": 0,
+            "min_senders": 0
+        }
     }
 }

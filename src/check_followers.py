@@ -1,7 +1,7 @@
 import json
 import os
 
-DATA_PATH = 'data/followers.json'
+DATA_PATH = 'data/followers/{{USER_ID}}.json'
 
 # ユーザーとの関係をチェックする
 def check_friendship(twitter, target):
@@ -34,7 +34,8 @@ def check_friendship(twitter, target):
 
 # メイン関数
 def main(twitter):
-    friends = json.load(open(DATA_PATH, 'r')) if os.path.exists(DATA_PATH) else []
+    data_path = DATA_PATH.replace('{{USER_ID}}', twitter.user_id)
+    friends = json.load(open(data_path)) if os.path.exists(data_path) else []
     followers = twitter.get_followers()
     if followers == []: return
     follower_ids = [user['id_str'] for user in followers]
@@ -43,4 +44,4 @@ def main(twitter):
         status = check_friendship(twitter, target)
         if status == False: return
     followers = [[user['id_str'], user['screen_name'], user['name']] for user in followers]
-    json.dump(followers, open(DATA_PATH, 'w'), indent = 4, ensure_ascii = False)
+    json.dump(followers, open(data_path, 'w'), indent = 4, ensure_ascii = False)

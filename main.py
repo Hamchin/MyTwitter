@@ -16,9 +16,10 @@ if __name__ == '__main__':
         'delete_tweets',
         'recommend'
     ])
+    parser.add_argument('--user-id', required = True)
     args = parser.parse_args()
 
-    config = json.load(open('config/config.json', 'r'))
+    config = json.load(open('config/config.json'))[args.user_id]
 
     twitter = Twitter(
         config['consumer_key'],

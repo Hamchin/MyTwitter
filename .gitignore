@@ -141,4 +141,3 @@ cython_debug/
 
 # Customize
 config.json
-data/
